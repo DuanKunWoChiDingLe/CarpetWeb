@@ -1,6 +1,6 @@
 <template>
   <el-dialog v-model="visible" title="支付" width="400px" @close="reset">
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+    <el-form ref="formRef" label-width="80px">
       <el-form-item label="订单号">
         <span>{{ orderNo }}</span>
       </el-form-item>
@@ -11,7 +11,6 @@
             :key="index"
             v-model="digits[index]"
             :maxlength="1"
-            link
             class="password-cell"
             :ref="setInputRef(index)"
             @input="onInput(index, $event)"
@@ -32,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick } from 'vue'
+import { ref, nextTick, type ComponentPublicInstance } from 'vue'
 import { ElMessage } from 'element-plus'
 import { orderApi } from '@/api/order'
 
@@ -53,11 +52,21 @@ const formRef = ref()
 const digits = ref<string[]>(['', '', '', '', '', ''])
 const inputRefs = ref<HTMLInputElement[]>([])
 
-const setInputRef = (index: number) => (el: any) => {
-  if (el) {
-    // el可能是组件实例，需要获取原生input元素
-    const inputEl = el.$el?.querySelector('input') || el
-    inputRefs.value[index] = inputEl
+// 设置输入框的引用，处理 Element Plus 组件实例与原生 input 的差异
+const setInputRef = (index: number) => (el: HTMLElement | ComponentPublicInstance | null) => {
+  if (!el) return
+  let inputElement: HTMLInputElement | null = null
+  // 检查是否是组件实例（具有 $el 属性）
+  if ('$el' in el) {
+    // 组件实例，尝试找到内部的 input 元素
+    const rootEl = el.$el as HTMLElement
+    inputElement = rootEl.querySelector('input')
+  } else {
+    // 已经是原生元素
+    inputElement = el as HTMLInputElement
+  }
+  if (inputElement) {
+    inputRefs.value[index] = inputElement
   }
 }
 
@@ -130,15 +139,20 @@ const submit = async () => {
     ElMessage.warning('请输入6位支付密码')
     return
   }
-  // 手动校验
   loading.value = true
   try {
     await orderApi.pay(props.orderId, { password })
     ElMessage.success('支付成功')
     visible.value = false
     emit('success')
-  } catch (error: any) {
-    ElMessage.error(error.response?.data?.message || '支付失败')
+  } catch (error: unknown) {
+    // 处理错误
+    let errorMsg = '支付失败'
+    if (error && typeof error === 'object' && 'response' in error) {
+      const err = error as { response?: { data?: { message?: string } } }
+      errorMsg = err.response?.data?.message || errorMsg
+    }
+    ElMessage.error(errorMsg)
     // 清空输入框，重新输入
     reset()
     nextTick(() => {

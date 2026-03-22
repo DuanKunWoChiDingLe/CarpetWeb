@@ -155,12 +155,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import ProductCard from '@/components/product/ProductCard.vue'
 import { brandApi, type Brand } from '@/api/brand'
-import { seriesApi, type Series } from '@/api/series'
+import { seriesApi, type Series, type SeriesQueryParams } from '@/api/series'
 import { productApi, type Product } from '@/api/product'
 
 const route = useRoute()
@@ -180,6 +180,9 @@ const fetchBrands = async () => {
     const res = await brandApi.getAll()
     brandList.value = res
   } catch (error) {
+    console.log(error);
+    
+    // 错误已由拦截器处理
   }
 }
 
@@ -230,52 +233,53 @@ const fetchSeries = async (reset = false) => {
 
   loading.value = true
   try {
-    const params: any = {
+    const params: SeriesQueryParams = {
       page: currentPage.value - 1,
       size: pageSize.value,
-      keyword: localFilter.keyword || undefined
-    }
-    if (localFilter.layType) params.layType = localFilter.layType
-    if (localFilter.material) params.material = localFilter.material
-    const brandId = getBrandIdByName(localFilter.brandName)
-    if (brandId) params.brandId = brandId
-
-    if (localSort.value === 'name_asc') {
-      params.sort = 'name_asc'
-    } else if (localSort.value === 'newest') {
-      params.sort = 'newest'
+      keyword: localFilter.keyword || undefined,
+      layType: localFilter.layType || undefined,
+      material: localFilter.material || undefined,
+      brandId: getBrandIdByName(localFilter.brandName),
+      sort: localSort.value !== 'default' ? localSort.value : undefined
     }
 
     const res = await seriesApi.getPage(params)
     let newSeries = res.content
 
-    // 过滤掉没有色号的系列 (colorCount === 0)
-    newSeries = newSeries.filter(series => series.colorCount > 0)
+    // 过滤掉没有色号的系列
+    newSeries = newSeries.filter(series => series.colorCount != null && series.colorCount > 0)
 
     // 如果当前页过滤后为空，且还有更多数据，则递归加载下一页
     if (newSeries.length === 0 && res.number < res.totalPages - 1) {
-      currentPage.value++  // 下一页
+      currentPage.value++
       loading.value = false
-      await fetchSeries(reset) // 递归调用
+      await fetchSeries(reset)
       return
     }
 
-    // 为每个系列获取前4个色号（并行请求）
+    // 为每个系列获取前4个色号（并行请求），并补充品牌、类型和销量字段
     const seriesWithProducts = await Promise.all(
-      newSeries.map(async (series) => {
-        try {
-          const productRes = await productApi.getListBySeries(series.id, {
-            page: 0,
-            size: 4,
-            sort: 'default'
-          })
-          return { ...series, products: productRes.content || [] }
-        } catch (error) {
-          console.error(`获取系列 ${series.id} 的色号失败`, error)
-          return { ...series, products: [] }
-        }
+  newSeries.map(async (series) => {
+    try {
+      const productRes = await productApi.getListBySeries(series.id, {
+        page: 0,
+        size: 4,
+        sort: 'default'
       })
-    )
+      const products = productRes.content.map(product => ({
+        ...product,
+        brand: series.brandName ?? '',                         // 补充品牌（后备空字符串）
+        type: series.layType === 'full' ? '满铺毯' : '方块毯',   // 补充类型（中文）
+        sales: 0                                                // 补充销量（默认0）
+      }))
+      return { ...series, products }
+    } catch (error) {
+      console.error(`获取系列 ${series.id} 的色号失败`, error)
+      return { ...series, products: [] }
+    }
+  })
+)
+
 
     if (reset) {
       seriesList.value = seriesWithProducts
@@ -285,7 +289,6 @@ const fetchSeries = async (reset = false) => {
       currentPage.value++
     }
     total.value = res.totalElements
-    // 判断是否还有更多：如果后端返回的当前页已经是最后一页，则没有更多
     hasMore.value = res.number < res.totalPages - 1
   } catch (error) {
     console.error('获取系列列表失败', error)

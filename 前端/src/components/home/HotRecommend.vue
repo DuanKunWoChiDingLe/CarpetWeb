@@ -35,8 +35,14 @@ const fetchHotProducts = async () => {
   loading.value = true
   try {
     const res = await productApi.getHotProducts(4)
-    products.value = res
+    products.value = res.map(p => ({
+      ...p,
+      brand: p.brandName || '',
+      type: p.layType === 'full' ? '满铺毯' : '方块毯',
+      sales: 0
+    }))
   } catch (error) {
+    console.log(error);
     ElMessage.error('获取热门推荐失败')
   } finally {
     loading.value = false

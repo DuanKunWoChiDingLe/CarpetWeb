@@ -6,14 +6,15 @@
         <el-icon size="20"><ArrowLeft /></el-icon>
       </div>
 
-      <!-- Logo -->
+      <!-- Logo：使用高清 PNG，确保透明背景 -->
       <div class="logo">
         <router-link to="/" class="logo-link">
-          <img src="@/assets/logo.jpg" alt="地毯公司" class="logo-image" />
+          <!-- 注意：确保图片路径是 ../../assets/logo.png 且是高清透明 PNG -->
+          <img src="../../assets/touming_logo.png" alt="道成国际" class="logo-image" />
         </router-link>
       </div>
 
-      <!-- 可见菜单项（平滑过渡） -->
+      <!-- 其余结构完全不变 -->
       <el-menu
         :default-active="activeIndex"
         class="nav-menu"
@@ -29,20 +30,17 @@
           :key="item.path"
           :index="item.path"
         >
-          <!-- 商家订单管理项：显示角标 -->
           <template v-if="item.isOrder && userStore.userInfo?.role === 'merchant'">
             <el-badge :value="notificationStore.newOrderCount" :hidden="notificationStore.newOrderCount === 0">
               <span class="menu-text">{{ item.name }}</span>
             </el-badge>
           </template>
-          <!-- 其他菜单项 -->
           <template v-else>
             <span class="menu-text">{{ item.name }}</span>
           </template>
         </el-menu-item>
       </el-menu>
 
-      <!-- 更多下拉菜单（科技感按钮） -->
       <el-dropdown v-if="foldedMenus.length > 0" class="more-dropdown" @command="handleMoreCommand">
         <span class="more-link">
           更多<el-icon class="el-icon--right"><ArrowDown /></el-icon>
@@ -63,9 +61,7 @@
         </template>
       </el-dropdown>
 
-      <!-- 右侧功能区（允许换行，防止溢出） -->
       <div class="navbar-actions">
-        <!-- 搜索框（宽屏显示） -->
         <div v-if="!isMobile" class="search-wrapper">
           <el-autocomplete
             v-model="searchText"
@@ -91,19 +87,16 @@
             </template>
           </el-autocomplete>
         </div>
-        <!-- 移动端搜索图标 -->
         <el-icon v-else class="search-icon-mobile" @click="goToSearchPage">
           <Search />
         </el-icon>
 
-        <!-- 购物车图标 -->
         <div class="cart-icon" @click="goToCart">
           <el-badge :value="cartCount" :hidden="cartCount === 0" class="cart-badge">
             <el-icon size="24"><ShoppingCart /></el-icon>
           </el-badge>
         </div>
 
-        <!-- 用户头像下拉菜单 -->
         <el-dropdown class="user-dropdown" @command="handleUserCommand">
           <el-avatar :size="40" :src="userAvatar" class="user-avatar" />
           <template #dropdown>
@@ -132,41 +125,35 @@
 </template>
 
 <script setup lang="ts">
+// Script部分代码不变，直接沿用你的代码
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Search, ShoppingCart, ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useCartStore } from '@/stores/cart'
 import { useUserStore } from '@/stores/user'
-import { useNotificationStore } from '@/stores/notification' // 新增导入
+import { useNotificationStore } from '@/stores/notification'
 
 const route = useRoute()
 const router = useRouter()
 const cartStore = useCartStore()
 const userStore = useUserStore()
-const notificationStore = useNotificationStore() // 新增实例
+const notificationStore = useNotificationStore()
 
-// 当前激活菜单项
 const activeIndex = computed(() => route.path)
-
-// 搜索框文本
 const searchText = ref('')
-
-// 购物车数量
 const cartCount = computed(() => cartStore.totalCount)
 
-// 用户头像
 const userAvatar = computed(() => {
   const avatar = userStore.userInfo?.avatar
   if (avatar) {
-    return avatar.startsWith('http')
-      ? avatar
-      : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080') + avatar
+    if (avatar.startsWith('http')) return avatar
+    if (avatar.startsWith('/uploads')) return avatar
+    return (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080') + avatar
   }
   return 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 })
 
-// 所有菜单项，统一为每个项添加 isOrder 字段（默认 false）
 const allMenus = computed(() => {
   const baseMenus = [
     { path: '/', name: '首页', isOrder: false },
@@ -184,13 +171,12 @@ const allMenus = computed(() => {
       ...baseMenus,
       { path: '/merchant/dashboard', name: '商家控制台', isOrder: false },
       { path: '/merchant/products', name: '商品管理', isOrder: false },
-      { path: '/merchant/orders', name: '订单管理', isOrder: true } // 订单管理项标记为 true
+      { path: '/merchant/orders', name: '订单管理', isOrder: true }
     ]
   }
   return baseMenus
 })
 
-// 窗口宽度响应
 const windowWidth = ref(window.innerWidth)
 const updateWidth = () => {
   windowWidth.value = window.innerWidth
@@ -202,10 +188,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateWidth)
 })
 
-// 移动端判断
 const isMobile = computed(() => windowWidth.value < 768)
-
-// 可见菜单数量（首页始终保留）
 const visibleCount = computed(() => {
   const width = windowWidth.value
   if (width >= 1200) return allMenus.value.length
@@ -253,7 +236,6 @@ const handleUserCommand = (command: string) => {
 </script>
 
 <style scoped>
-/* 原有样式保持不变，无需修改 */
 .navbar {
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -276,7 +258,6 @@ const handleUserCommand = (command: string) => {
   flex-wrap: nowrap;
 }
 
-/* 回退按钮 */
 .back-button {
   flex-shrink: 0;
   width: 40px;
@@ -299,26 +280,42 @@ const handleUserCommand = (command: string) => {
   transform: scale(0.98);
 }
 
-/* Logo */
+/* ========== Logo 样式优化（清晰+完美适配导航栏） ========== */
+/* ========== Logo 样式：明显增大，适配导航栏 ========== */
 .logo {
   flex-shrink: 0;
-}
-.logo-link {
-  display: block;
-  line-height: 0;
-  transition: transform 0.3s ease;
-}
-.logo-link:hover {
-  transform: scale(1.05);
-}
-.logo-image {
-  height: 48px;
-  width: auto;
-  display: block;
-  border-radius: 8px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;          /* 左右留白稍大，突出Logo */
+  background: transparent;
 }
 
-/* 导航菜单 - 平滑过渡 */
+.logo-link {
+  display: flex;
+  align-items: center;
+  line-height: 0;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.logo-link:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 2px 10px rgba(64, 158, 255, 0.4));
+}
+
+.logo-image {
+  /* 关键：明显增大的高度，与70px导航栏匹配（上下各留7px） */
+  height: 82px;
+  width: auto;
+  display: block;
+  background: transparent;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: bicubic;
+  backface-visibility: hidden;
+}
+
 .nav-menu {
   flex-shrink: 1;
   min-width: 0;
@@ -332,7 +329,7 @@ const handleUserCommand = (command: string) => {
   line-height: 70px;
   height: 70px;
   position: relative;
-  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1); /* 平滑过渡 */
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -379,7 +376,6 @@ const handleUserCommand = (command: string) => {
   z-index: 1;
 }
 
-/* 更多下拉菜单 - 科技感按钮 */
 .more-dropdown {
   flex-shrink: 0;
   margin-left: 4px;
@@ -401,7 +397,6 @@ const handleUserCommand = (command: string) => {
   text-shadow: 0 0 8px rgba(64, 158, 255, 0.6);
 }
 
-/* 右侧功能区 - 允许换行防止溢出 */
 .navbar-actions {
   flex-shrink: 0;
   display: flex;
@@ -412,7 +407,6 @@ const handleUserCommand = (command: string) => {
   justify-content: flex-end;
 }
 
-/* 搜索框 */
 .search-wrapper {
   flex-shrink: 0;
 }
@@ -472,7 +466,6 @@ const handleUserCommand = (command: string) => {
   filter: drop-shadow(0 4px 8px rgba(64, 158, 255, 0.4));
 }
 
-/* 移动端搜索图标 */
 .search-icon-mobile {
   font-size: 24px;
   color: #fff;
@@ -485,7 +478,6 @@ const handleUserCommand = (command: string) => {
   color: #409eff;
 }
 
-/* 购物车图标 */
 .cart-icon {
   cursor: pointer;
   display: flex;
@@ -509,7 +501,6 @@ const handleUserCommand = (command: string) => {
   right: -5px;
 }
 
-/* 用户头像 */
 .user-avatar {
   cursor: pointer;
   border: 2px solid rgba(255, 255, 255, 0.3);
@@ -552,7 +543,7 @@ const handleUserCommand = (command: string) => {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* 响应式宽度调整 */
+/* 响应式适配（Logo 已跟随容器自适应，无需额外修改） */
 @media screen and (max-width: 1200px) {
   .search-input {
     width: 240px;
@@ -584,7 +575,7 @@ const handleUserCommand = (command: string) => {
     width: 30px;
   }
   .logo-image {
-    height: 40px;
+    height: 40px; /* 移动端缩小logo，保持适配 */
   }
   .navbar-container {
     gap: 8px;

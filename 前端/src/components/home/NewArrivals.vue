@@ -1,3 +1,4 @@
+
 <template>
   <div class="new-arrivals">
     <h2 class="section-title">最新地毯</h2>

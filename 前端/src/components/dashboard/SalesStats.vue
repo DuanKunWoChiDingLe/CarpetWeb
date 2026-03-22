@@ -12,7 +12,7 @@
           <div class="stat-item">
             <div class="stat-label">今日销量</div>
             <div class="stat-value">¥{{ overview?.today?.salesAmount?.toFixed(2) ?? '0.00' }}</div>
-            <div class="stat-sub">订单数：{{ overview.today.orderCount }}</div>
+            <div class="stat-sub">订单数：{{ overview?.today?.orderCount ?? 0 }}</div>
           </div>
         </el-card>
       </el-col>
@@ -20,8 +20,8 @@
         <el-card shadow="hover">
           <div class="stat-item">
             <div class="stat-label">本月销量</div>
-            <div class="stat-value">¥{{ overview?.today?.salesAmount?.toFixed(2) ?? '0.00' }}</div>
-            <div class="stat-sub">订单数：{{ overview.month.orderCount }}</div>
+            <div class="stat-value">¥{{ overview?.month?.salesAmount?.toFixed(2) ?? '0.00' }}</div>
+            <div class="stat-sub">订单数：{{ overview?.month?.orderCount ?? 0 }}</div>
           </div>
         </el-card>
       </el-col>
@@ -29,8 +29,8 @@
         <el-card shadow="hover">
           <div class="stat-item">
             <div class="stat-label">累计销量</div>
-            <div class="stat-value">¥{{ overview?.today?.salesAmount?.toFixed(2) ?? '0.00' }}</div>
-            <div class="stat-sub">订单数：{{ overview.total.orderCount }}</div>
+            <div class="stat-value">¥{{ overview?.total?.salesAmount?.toFixed(2) ?? '0.00' }}</div>
+            <div class="stat-sub">订单数：{{ overview?.total?.orderCount ?? 0 }}</div>
           </div>
         </el-card>
       </el-col>
@@ -87,7 +87,14 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import { ElMessage } from 'element-plus'
-import { statsApi, type SalesOverview, type SeriesSales, type BrandSales, type TopProduct } from '@/api/stats'
+import {
+  statsApi,
+  type SalesOverview,
+  type SalesTrend,
+  type SeriesSales,
+  type BrandSales,
+  type TopProduct
+} from '@/api/stats'
 
 // 加载状态
 const loading = ref(false)
@@ -111,15 +118,18 @@ let brandChart: echarts.ECharts | null = null
 const topProducts = ref<TopProduct[]>([])
 
 // 获取概览数据
+// 获取概览数据
 const fetchOverview = async () => {
   try {
     const data = await statsApi.getOverview()
     overview.value = {
-      today: Object.assign({ salesAmount: 0, orderCount: 0, salesVolume: 0, ...data.today }),
-      month:  Object.assign({ salesAmount: 0, orderCount: 0, salesVolume: 0, ...data.month }),
-      total:  Object.assign({ salesAmount: 0, orderCount: 0, salesVolume: 0, ...data.total })
+      today: Object.assign({ salesAmount: 0, orderCount: 0, salesVolume: 0 }, data.today),
+      month: Object.assign({ salesAmount: 0, orderCount: 0, salesVolume: 0 }, data.month),
+      total: Object.assign({ salesAmount: 0, orderCount: 0, salesVolume: 0 }, data.total)
     }
   } catch (error) {
+    console.log(error);
+    
     ElMessage.error('获取概览数据失败')
   }
 }
@@ -130,6 +140,7 @@ const fetchTrend = async () => {
     const data = await statsApi.getTrend({ interval: 'day' })
     renderTrendChart(data)
   } catch (error) {
+    console.log(error);
     ElMessage.error('获取趋势数据失败')
   }
 }
@@ -140,6 +151,7 @@ const fetchSeries = async () => {
     const data = await statsApi.getSalesBySeries({ type: 'amount' })
     renderSeriesChart(data)
   } catch (error) {
+    console.log(error);
     ElMessage.error('获取系列占比失败')
   }
 }
@@ -150,6 +162,7 @@ const fetchBrands = async () => {
     const data = await statsApi.getSalesByBrand({ type: 'amount' })
     renderBrandChart(data)
   } catch (error) {
+    console.log(error);
     ElMessage.error('获取品牌对比失败')
   }
 }
@@ -160,12 +173,13 @@ const fetchTopProducts = async () => {
     const data = await statsApi.getTopProducts({ limit: 10 })
     topProducts.value = data
   } catch (error) {
+    console.error(error)
     ElMessage.error('获取热销商品失败')
   }
 }
 
 // 渲染趋势图
-const renderTrendChart = (data: any) => {
+const renderTrendChart = (data: SalesTrend) => {
   if (!trendChartRef.value) return
   if (!trendChart) {
     trendChart = echarts.init(trendChartRef.value)

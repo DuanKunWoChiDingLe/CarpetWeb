@@ -16,7 +16,7 @@
           <div class="avatar-uploader">
             <el-upload
               class="avatar-uploader"
-              :action="`${baseURL}/api/upload/image`"
+              :action="`${baseURL}/upload/image`"
               :headers="{ Authorization: `Bearer ${userStore.token}` }"
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
@@ -24,7 +24,6 @@
               :before-upload="beforeAvatarUpload"
             >
               <img v-if="form.avatar" :src="getImageUrl(form.avatar)" class="avatar" />
-              
               <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
             </el-upload>
             <div class="avatar-tip">点击上传头像，支持 jpg/png，不超过 2MB</div>
@@ -47,11 +46,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, type FormInstance } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { userApi } from '@/api/user'
 import { useRouter } from 'vue-router'
+import { type UploadResponse } from '@/api/upload'
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -59,7 +59,7 @@ const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 const loading = ref(false)
 const submitting = ref(false)
-const formRef = ref()
+const formRef = ref<FormInstance | null>(null)
 const form = reactive({
   nickname: '',
   avatar: ''
@@ -67,17 +67,23 @@ const form = reactive({
 
 // 表单校验规则
 const rules = {
-  nickname: [
-    { max: 50, message: '昵称长度不能超过50', trigger: 'blur' }
-  ]
+  nickname: [{ max: 50, message: '昵称长度不能超过50', trigger: 'blur' }]
 }
 
 // 获取图片完整 URL
 const getImageUrl = (path: string) => {
+  console.log('getImageUrl 接收到 path:', path)  // 打印原始路径
   if (!path) return ''
   if (path.startsWith('http')) return path
-  return baseURL + path
+  if (path.startsWith('/uploads')) {
+    console.log('path 以 /uploads 开头，直接返回:', path)  // 打印返回路径
+    return path
+  }
+  const fullUrl = baseURL + path
+  console.log('拼接后 URL:', fullUrl)
+  return fullUrl
 }
+
 
 // 加载当前用户信息
 const loadProfile = async () => {
@@ -95,6 +101,8 @@ const loadProfile = async () => {
     form.nickname = res.nickname || ''
     form.avatar = res.avatar || ''
   } catch (error) {
+    console.log(error);
+    
     ElMessage.error('获取个人信息失败')
   } finally {
     loading.value = false
@@ -102,7 +110,7 @@ const loadProfile = async () => {
 }
 
 // 头像上传成功
-const handleAvatarSuccess = (response: any) => {
+const handleAvatarSuccess = (response: UploadResponse, file: File) => {
   const url = response.data?.url || response.url
   if (url) {
     form.avatar = url
@@ -134,7 +142,7 @@ const beforeAvatarUpload = (file: File) => {
 
 // 提交修改
 const submitForm = async () => {
-  await formRef.value.validate()
+  await formRef.value?.validate()
   submitting.value = true
   try {
     const updated = await userApi.updateProfile({
@@ -144,14 +152,18 @@ const submitForm = async () => {
     userStore.userInfo = updated
     ElMessage.success('资料更新成功')
     router.back()
-  } catch (error: any) {
-    if (error.response) {
+  } catch (error: unknown) {
+    let errorMsg = '更新失败'
+    if (error && typeof error === 'object' && 'response' in error) {
+      const err = error as { response?: { data?: { message?: string } } }
+      errorMsg = err.response?.data?.message || errorMsg
     }
-    ElMessage.error(error.response?.data?.message || '更新失败')
+    ElMessage.error(errorMsg)
   } finally {
     submitting.value = false
   }
 }
+
 onMounted(() => {
   loadProfile()
 })

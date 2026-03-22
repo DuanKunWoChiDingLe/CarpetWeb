@@ -51,7 +51,7 @@
           <el-card class="product-card" :body-style="{ padding: '0' }" shadow="hover">
             <div class="card-cover">
               <el-image
-                :src="product.images?.[0] ? baseURL + product.images[0] : ''"
+                :src="product.images?.[0] || ''"
                 fit="cover"
                 class="cover-image"
               />
@@ -73,77 +73,77 @@
     <el-empty v-if="!loadingProducts && products.length === 0" description="暂无色号" />
 
     <!-- 分页控件（添加条件隐藏） -->
-<el-pagination
-  v-if="total > pageSize"
-  v-model:current-page="currentPage"
-  v-model:page-size="pageSize"
-  :total="total"
-  :page-sizes="[12, 24, 36]"
-  layout="total, sizes, prev, pager, next, jumper"
-  @size-change="handleSizeChange"
-  @current-change="handleCurrentChange"
-  class="pagination"
-/>
+    <el-pagination
+      v-if="total > pageSize"
+      v-model:current-page="currentPage"
+      v-model:page-size="pageSize"
+      :total="total"
+      :page-sizes="[12, 24, 36]"
+      layout="total, sizes, prev, pager, next, jumper"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      class="pagination"
+    />
 
     <!-- 编辑商品弹窗（原有） -->
     <el-dialog v-model="dialogVisible" title="编辑商品" width="600px" @close="resetForm">
-  <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-    <el-form-item label="品牌">
-      <el-input :value="seriesInfo.brandName" disabled />
-    </el-form-item>
-    <el-form-item label="系列">
-      <el-input :value="seriesInfo.name" disabled />
-    </el-form-item>
-    <el-form-item label="色号" prop="colorCode">
-      <el-input v-model="form.colorCode" maxlength="5" show-word-limit placeholder="例如 01、02A" />
-    </el-form-item>
-    <el-form-item label="铺设方式">
-      <el-input :value="seriesInfo.layType === 'full' ? '满铺毯' : '方块毯'" disabled />
-    </el-form-item>
-    <el-form-item label="材质">
-      <el-input :value="materialMap[seriesInfo.material] || seriesInfo.material" disabled />
-    </el-form-item>
-    <el-form-item label="规格">
-      <el-input :value="seriesInfo.spec" disabled />
-    </el-form-item>
-    <el-form-item label="价格(元/m²)" prop="pricePerSqm">
-      <el-input-number v-model="form.pricePerSqm" :precision="2" :min="0" style="width: 100%" />
-    </el-form-item>
-    <el-form-item label="库存" prop="stock">
-      <el-input-number v-model="form.stock" :min="0" style="width: 100%" />
-    </el-form-item>
-    <el-form-item label="商品图片" prop="images">
-      <el-upload
-        v-model:file-list="fileList"
-        :action="`${baseURL}/api/upload/image`"
-        :headers="{ Authorization: `Bearer ${userStore.token}` }"
-        list-type="picture-card"
-        :limit="5"
-        multiple
-        :on-success="handleUploadSuccess"
-        :on-error="handleUploadError"
-        :on-remove="handleRemove"
-        :on-preview="handlePreview"
-      >
-        <el-icon><Plus /></el-icon>
-      </el-upload>
-      <div class="form-tip">最多上传5张，第一张作为主图</div>
-      <el-dialog v-model="previewVisible" append-to-body>
-        <img :src="previewUrl" alt="预览" style="width: 100%" />
-      </el-dialog>
-    </el-form-item>
-    <el-form-item label="商品描述" prop="description">
-      <el-input v-model="form.description" type="textarea" :rows="3" />
-    </el-form-item>
-    <el-form-item label="上架状态" prop="status">
-      <el-switch v-model="form.status" :active-value="1" :inactive-value="0" />
-    </el-form-item>
-  </el-form>
-  <template #footer>
-    <el-button @click="dialogVisible = false">取消</el-button>
-    <el-button type="primary" @click="submitForm" :loading="submitting">确定</el-button>
-  </template>
-</el-dialog>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+        <el-form-item label="品牌">
+          <el-input :value="seriesInfo.brandName" disabled />
+        </el-form-item>
+        <el-form-item label="系列">
+          <el-input :value="seriesInfo.name" disabled />
+        </el-form-item>
+        <el-form-item label="色号" prop="colorCode">
+          <el-input v-model="form.colorCode" maxlength="5" show-word-limit placeholder="例如 01、02A" />
+        </el-form-item>
+        <el-form-item label="铺设方式">
+          <el-input :value="seriesInfo.layType === 'full' ? '满铺毯' : '方块毯'" disabled />
+        </el-form-item>
+        <el-form-item label="材质">
+          <el-input :value="materialMap[seriesInfo.material] || seriesInfo.material" disabled />
+        </el-form-item>
+        <el-form-item label="规格">
+          <el-input :value="seriesInfo.spec" disabled />
+        </el-form-item>
+        <el-form-item label="价格(元/m²)" prop="pricePerSqm">
+          <el-input-number v-model="form.pricePerSqm" :precision="2" :min="0" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="库存" prop="stock">
+          <el-input-number v-model="form.stock" :min="0" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="商品图片" prop="images">
+          <el-upload
+            v-model:file-list="fileList"
+            :action="`${baseURL}/upload/image`"
+            :headers="{ Authorization: `Bearer ${userStore.token}` }"
+            list-type="picture-card"
+            :limit="5"
+            multiple
+            :on-success="handleUploadSuccess"
+            :on-error="handleUploadError"
+            :on-remove="handleRemove"
+            :on-preview="handlePreview"
+          >
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+          <div class="form-tip">最多上传5张，第一张作为主图</div>
+          <el-dialog v-model="previewVisible" append-to-body>
+            <img :src="previewUrl" alt="预览" style="width: 100%" />
+          </el-dialog>
+        </el-form-item>
+        <el-form-item label="商品描述" prop="description">
+          <el-input v-model="form.description" type="textarea" :rows="3" />
+        </el-form-item>
+        <el-form-item label="上架状态" prop="status">
+          <el-switch v-model="form.status" :active-value="1" :inactive-value="0" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitForm" :loading="submitting">确定</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 新增商品弹窗（新增） -->
     <el-dialog v-model="addDialogVisible" title="新增色号" width="600px" @close="resetAddForm">
@@ -176,7 +176,7 @@
         <el-form-item label="商品图片" prop="images">
           <el-upload
             v-model:file-list="addFileList"
-            :action="`${baseURL}/api/upload/image`"
+            :action="`${baseURL}/upload/image`"
             :headers="{ Authorization: `Bearer ${userStore.token}` }"
             list-type="picture-card"
             :limit="5"
@@ -211,11 +211,13 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, type FormInstance, type UploadFile } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { seriesApi, type Series } from '@/api/series'
 import { productApi, type Product } from '@/api/product'
+import { type UploadResponse } from '@/api/upload'
+import type { UploadFileResponse } from '@/types/upload'
 
 const route = useRoute()
 const router = useRouter()
@@ -259,6 +261,8 @@ const fetchSeriesDetail = async () => {
     const res = await seriesApi.getDetail(Number(seriesId.value))
     seriesInfo.value = res
   } catch (error) {
+    console.log(error);
+    
     ElMessage.error('获取系列详情失败')
     router.push('/merchant/products')
   } finally {
@@ -277,10 +281,11 @@ const fetchProducts = async () => {
       sort: sortBy.value
     }
     const res = await productApi.getListBySeries(Number(seriesId.value), params)
-    products.value = res.content || []  // 确保是数组
+    products.value = res.content || []
     total.value = res.totalElements || 0
   } catch (error) {
-    products.value = []   // 关键：失败时也设为空数组
+    console.log(error);
+    products.value = []
     total.value = 0
     ElMessage.error('获取色号列表失败')
   } finally {
@@ -303,10 +308,10 @@ const handleCurrentChange = (page: number) => {
   fetchProducts()
 }
 
-// ---------- 编辑商品相关（原有）----------
+// ---------- 编辑商品相关 ----------
 const dialogVisible = ref(false)
 const submitting = ref(false)
-const formRef = ref()
+const formRef = ref<FormInstance | null>(null)
 const form = reactive({
   id: 0,
   seriesId: 0,
@@ -317,7 +322,7 @@ const form = reactive({
   description: '',
   status: 1
 })
-const fileList = ref<any[]>([])
+const fileList = ref<UploadFile[]>([])
 const previewVisible = ref(false)
 const previewUrl = ref('')
 
@@ -336,18 +341,21 @@ const rules = {
   ]
 }
 
-const handleUploadSuccess = (response: any, file: any, fileList: any[]) => {
-  if (response.url) {
-    file.url = baseURL + response.url
-    form.images = fileList.map(f => f.response?.url).filter(Boolean)
+const handleUploadSuccess = (response: UploadResponse, file: UploadFile, fileList: UploadFile[]) => {
+  const url = response.data?.url || response.url
+  if (url) {
+    // 直接使用相对路径，不再拼接 baseURL
+    file.url = url
+    file.response = { url } as UploadFileResponse
+    form.images = fileList.map(f => (f.response as UploadFileResponse)?.url).filter(Boolean) as string[]
   }
 }
 const handleUploadError = () => ElMessage.error('图片上传失败')
-const handleRemove = (file: any, fileList: any[]) => {
-  form.images = fileList.map(f => f.response?.url).filter(Boolean)
+const handleRemove = (file: UploadFile, fileList: UploadFile[]) => {
+  form.images = fileList.map(f => (f.response as UploadFileResponse)?.url).filter(Boolean) as string[]
 }
-const handlePreview = (file: any) => {
-  previewUrl.value = file.url
+const handlePreview = (file: UploadFile) => {
+  previewUrl.value = file.url!
   previewVisible.value = true
 }
 
@@ -363,12 +371,13 @@ const editProduct = (product: Product) => {
   // 确保数字类型
   form.pricePerSqm = Number(product.pricePerSqm)
   form.stock = Number(product.stock)
+  // 文件列表中的 url 也直接使用相对路径
   fileList.value = (product.images || []).map((url: string, index: number) => ({
     name: `image-${index}`,
-    url: baseURL + url,
+    url: url,
     response: { url },
     status: 'success'
-  }))
+  })) as UploadFile[]
   dialogVisible.value = true
 }
 
@@ -395,10 +404,9 @@ const resetForm = () => {
 }
 
 const submitForm = async () => {
-  
   submitting.value = true
   try {
-    await formRef.value.validate()
+    await formRef.value?.validate()
     await productApi.update(form.id, {
       seriesId: form.seriesId,
       colorCode: form.colorCode,
@@ -411,11 +419,12 @@ const submitForm = async () => {
     ElMessage.success('更新成功')
     dialogVisible.value = false
     fetchProducts()
-  } catch(error: unknown) {
-    if (error.fields) {
-      // 表单验证失败，输入框已显示具体错误，无需任何操作
-    } else if (error.response) {
-      ElMessage.error(error.response?.data?.message || '更新失败')
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'fields' in error) {
+      // 表单验证失败，输入框已显示具体错误，无需额外操作
+    } else if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response?: { data?: { message?: string } } }
+      ElMessage.error(axiosError.response?.data?.message || '更新失败')
     } else {
       ElMessage.error('更新失败，请重试')
     }
@@ -424,12 +433,12 @@ const submitForm = async () => {
   }
 }
 
-// ---------- 新增商品相关（新增）----------
+// ---------- 新增商品相关 ----------
 const addDialogVisible = ref(false)
 const addSubmitting = ref(false)
-const addFormRef = ref()
+const addFormRef = ref<FormInstance | null>(null)
 const addForm = reactive({
-  seriesId: Number(route.params.id), // 自动关联当前系列
+  seriesId: Number(route.params.id),
   colorCode: '',
   pricePerSqm: undefined as number | undefined,
   stock: undefined as number | undefined,
@@ -437,53 +446,44 @@ const addForm = reactive({
   description: '',
   status: 1
 })
-const addFileList = ref<any[]>([])
+const addFileList = ref<UploadFile[]>([])
 
-// 新增图片上传成功回调（复用已有 handleUploadError 和 handlePreview）
-// 新增图片上传成功回调
-const handleAddUploadSuccess = (response: any, file: any, fileList: any[]) => {
-  const url = response.data?.url  // 提取 data.url
+const handleAddUploadSuccess = (response: UploadResponse, file: UploadFile, fileList: UploadFile[]) => {
+  const url = response.data?.url
   if (url) {
-    file.url = baseURL + url
-    // 为 file 对象添加 response 属性，便于后续映射
+    file.url = url
     file.response = { url }
-    const urls = fileList.map(f => f.response?.url).filter(Boolean)
+    const urls = fileList.map(f => f.response?.url).filter(Boolean) as string[]
     addForm.images = urls
   } else {
     ElMessage.error('图片上传失败：返回数据格式异常')
   }
 }
 
-// 新增图片移除回调
-const handleAddRemove = (file: any, fileList: any[]) => {
-  const urls = fileList.map(f => f.response?.url).filter(Boolean)
+const handleAddRemove = (file: UploadFile, fileList: UploadFile[]) => {
+  const urls = fileList.map(f => f.response?.url).filter(Boolean) as string[]
   addForm.images = urls
 }
 
-// 打开新增弹窗
 const openAddDialog = () => {
   addForm.colorCode = ''
   addForm.pricePerSqm = undefined
   addForm.stock = undefined
-  addForm.images = []      // 清空图片数组
+  addForm.images = []
   addForm.description = ''
   addForm.status = 1
-  addFileList.value = []   // 清空文件列表
+  addFileList.value = []
   addDialogVisible.value = true
 }
 
-// 关闭新增弹窗时重置校验
 const resetAddForm = () => {
   addFormRef.value?.clearValidate()
 }
 
-// 提交新增
 const submitAddForm = async () => {
-  
   addSubmitting.value = true
   try {
-    // 调用新增接口，商品名称由后端自动生成（系列名+色号）
-    await addFormRef.value.validate()
+    await addFormRef.value?.validate()
     await productApi.add({
       seriesId: addForm.seriesId,
       colorCode: addForm.colorCode,
@@ -495,8 +495,9 @@ const submitAddForm = async () => {
     })
     ElMessage.success('新增成功')
     addDialogVisible.value = false
-    fetchProducts() // 刷新商品列表
+    fetchProducts()
   } catch (error: unknown) {
+    console.log(error);
     ElMessage.error('新增失败，请重试')
   } finally {
     addSubmitting.value = false
@@ -516,7 +517,6 @@ watch([currentPage, pageSize, sortBy], () => {
 </script>
 
 <style scoped>
-/* 原有样式保持不变，无需修改 */
 .merchant-series-detail {
   max-width: 1400px;
   margin: 30px auto;
@@ -527,7 +527,7 @@ watch([currentPage, pageSize, sortBy], () => {
 .series-title { font-size: 24px; font-weight: 600; margin: 0 0 10px; color: #333; }
 .series-meta { font-size: 14px; color: #666; margin-bottom: 10px; }
 .series-desc { font-size: 14px; color: #555; background: rgba(255,255,255,0.6); padding: 12px; border-radius: 6px; line-height: 1.6; }
-.sort-bar { margin-bottom: 20px; text-align: right; } /* 保留原有样式，但已在 action-bar 内联样式覆盖 */
+.sort-bar { margin-bottom: 20px; text-align: right; }
 .product-grid { margin-top: 20px; min-height: 400px; }
 .grid-item { margin-bottom: 20px; }
 .product-card { border-radius: 8px; overflow: hidden; transition: transform 0.3s; }

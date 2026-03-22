@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, type FormInstance, type FormItemRule } from 'element-plus'
 import { User, Lock, View, Hide } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 
@@ -103,12 +103,12 @@ const form = ref({
   confirmPassword: ''
 })
 const loading = ref(false)
-const formRef = ref()
+const formRef = ref<FormInstance | null>(null)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 
 // 验证规则
-const validatePass2 = (rule: any, value: string, callback: any) => {
+const validatePass2 = (rule: FormItemRule, value: string, callback: (error?: Error) => void) => {
   if (value !== form.value.password) {
     callback(new Error('两次输入密码不一致'))
   } else {
@@ -138,7 +138,7 @@ const rules = {
 
 // 注册提交
 const handleRegister = async () => {
-  await formRef.value.validate()
+  await formRef.value?.validate()
   loading.value = true
 
   // 检查是否有临时商家注册标记（一次性）
@@ -149,7 +149,7 @@ const handleRegister = async () => {
     form.value.username,
     form.value.password,
     role,
-    form.value.nickname // 传递昵称，可能为空字符串
+    // form.value.nickname // 传递昵称，可能为空字符串
   )
 
   // 无论成功失败，清除标记（避免重复使用）

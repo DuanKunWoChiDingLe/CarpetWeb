@@ -10,5 +10,6 @@ export interface Product {
   stock: number
   status: 0 | 1
   description?: string  // 新增（后端可能返回）
+  createdAt?: string
   // 移除 createdTime，因为列表接口不返回
 }

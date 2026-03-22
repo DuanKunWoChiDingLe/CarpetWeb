@@ -54,11 +54,19 @@ import { useUserStore } from '@/stores/user'
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 const userStore = useUserStore()
 
-// 处理图片路径：如果是相对路径，拼接基础 URL
+// 处理图片路径：如果是相对路径，且以 /uploads 开头则直接返回，否则拼接 baseURL（但图片应使用绝对路径）
 const getImageUrl = (path: string) => {
   if (!path) return ''
-  if (path.startsWith('http')) return path
-  // 确保路径以 / 开头
+  // 如果已经是完整 URL 或绝对路径（以 /uploads 开头），直接返回
+  if (path.startsWith('http') || path.startsWith('/uploads')) {
+    return path
+  }
+  // 其他情况（如默认图片），可能需要拼接 baseURL 或使用静态资源路径
+  // 这里假设默认图片放在 public 目录下，直接使用 /images/default.jpg
+  if (path.startsWith('/images/')) {
+    return path
+  }
+  // 兜底：拼接 baseURL（一般不会走到这里）
   return baseURL + (path.startsWith('/') ? path : '/' + path)
 }
 
@@ -196,27 +204,17 @@ const addToCart = () => {
 
 .cart-btn-circle {
   width: 40px;
-  /* 按钮宽度 */
   height: 40px;
-  /* 按钮高度，与宽度相等实现圆形 */
   padding: 0;
-  /* 去除内边距，使图标居中 */
   font-size: 20px;
-  /* 图标大小 */
   border: 1px solid #dcdfe6;
-  /* 浅灰色边框 */
   background-color: #fff;
-  /* 白色背景 */
   color: #909399;
-  /* 图标颜色 */
 }
 
 .cart-btn-circle:hover {
   color: #409EFF;
-  /* 悬停时图标变为主题色 */
   border-color: #409EFF;
-  /* 边框也变为主题色 */
   background-color: #ecf5ff;
-  /* 浅蓝色背景 */
 }
 </style>

@@ -2,65 +2,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Product } from '@/types/product'
-
-// 模拟商品数据
-const mockProducts: Product[] = [
-  {
-    id: 1,
-    name: '道成·云栖客厅地毯',
-    brand: '道成',
-    type: '满铺毯',
-    pricePerSqm: 199,
-    images: '/images/product1.jpg',
-    sales: 120,
-    createdTime: '2025-01-10',
-    stock: 50,
-    status: 1
-  },
-  {
-    id: 2,
-    name: '飞湃·几何方块毯',
-    brand: '飞湃',
-    type: '方块毯',
-    size: '50*50',
-    pricePerSqm: 89,
-    images: '/images/product2.jpg',
-    sales: 80,
-    createdTime: '2025-01-15',
-    stock: 30,
-    status: 1
-  },
-  {
-    id: 3,
-    name: '红塬·北欧简约满铺',
-    brand: '红塬',
-    type: '满铺毯',
-    pricePerSqm: 159,
-    images: '/images/product3.jpg',
-    sales: 60,
-    createdTime: '2025-01-20',
-    stock: 20,
-    status: 0
-  },
-  {
-    id: 4,
-    name: '道成·商务方块毯',
-    brand: '道成',
-    type: '方块毯',
-    size: '100*25',
-    pricePerSqm: 120,
-    images: '/images/product4.jpg',
-    sales: 45,
-    createdTime: '2025-01-25',
-    stock: 15,
-    status: 1
-  }
-]
+import { productApi } from '@/api/product'
 
 export const useProductStore = defineStore('product', () => {
-  // 状态
-  const allProducts = ref<Product[]>([...mockProducts])
-  const products = ref<Product[]>([]) // 当前展示的商品列表（分页后）
+  // 状态：所有商品（用于前端搜索建议等）和当前展示列表
+  const allProducts = ref<Product[]>([])          // 将从 API 获取
+  const products = ref<Product[]>([])             // 当前展示的商品列表（分页后）
   const filter = ref({
     keyword: '',
     brand: '',
@@ -122,10 +69,10 @@ export const useProductStore = defineStore('product', () => {
         result.sort((a, b) => b.pricePerSqm - a.pricePerSqm)
         break
       case 'newest':
-        result.sort((a, b) => new Date(b.createdTime).getTime() - new Date(a.createdTime).getTime())
+        result.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
         break
       case 'sales':
-        result.sort((a, b) => b.sales - a.sales)
+        result.sort((a, b) => (b.sales || 0) - (a.sales || 0))
         break
       default:
         result.sort((a, b) => a.id - b.id)
@@ -134,28 +81,24 @@ export const useProductStore = defineStore('product', () => {
     return result
   }
 
-  // 加载数据（模拟 API）
+  // 加载数据（从 API 获取）
   async function fetchProducts(reset = false) {
     if (loading.value) return
     if (!reset && !hasMore.value) return
 
     loading.value = true
-    await new Promise(resolve => setTimeout(resolve, 600))
-
-    const filtered = filterProducts(allProducts.value, filter.value, sortBy.value)
-    const start = reset ? 0 : (page.value - 1) * pageSize
-    const end = start + pageSize
-    const pageItems = filtered.slice(start, end)
-
-    if (reset) {
-      products.value = pageItems
-      page.value = 1
-    } else {
-      products.value = [...products.value, ...pageItems]
-      page.value++
+    try {
+      // TODO: 调用 productApi 获取分页商品，参数包括筛选和排序
+      // 以下为模拟，实际应替换为真实 API 调用
+      // const res = await productApi.getProducts({ ...filter.value, page: page.value, size: pageSize })
+      // products.value = reset ? res.content : [...products.value, ...res.content]
+      // total = res.totalElements
+      // hasMore.value = products.value.length < total
+    } catch (error) {
+      console.error('获取商品列表失败', error)
+    } finally {
+      loading.value = false
     }
-    hasMore.value = end < filtered.length
-    loading.value = false
   }
 
   // 应用筛选和排序（重置并重新加载）
@@ -188,7 +131,7 @@ export const useProductStore = defineStore('product', () => {
     loading,
     filterCount,
     fetchProducts,
-    applyFilter,      // 确保这一行存在！
+    applyFilter,
     resetFilter
   }
 })

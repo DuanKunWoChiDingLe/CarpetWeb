@@ -14,7 +14,8 @@ import { useUserStore } from './stores/user'
 import { useCartStore } from '@/stores/cart'
 import { connectWebSocket, subscribe, unsubscribe, disconnectWebSocket } from '@/api/websocket'
 import { ElNotification } from 'element-plus'
-
+import { useNotificationStore } from '@/stores/notification'
+const notificationStore = useNotificationStore()
 
 const userStore = useUserStore()
 const cartStore = useCartStore()
@@ -74,10 +75,11 @@ watch(() => userStore.isLoggedIn, (isLoggedIn) => {
 
       // 商家额外订阅新订单广播
       if (role === 'merchant') {
-        subscribe('/topic/newOrders', (count: number) => {
-          console.log('新订单数量更新:', count)
-          notificationStore.setNewOrderCount(count)
-        })
+        subscribe('/topic/newOrders', (msg: unknown) => {
+  if (typeof msg === 'number') {
+    notificationStore.setNewOrderCount(msg)
+  }
+})
       }
     })
   } else {

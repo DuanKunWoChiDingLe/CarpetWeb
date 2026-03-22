@@ -45,7 +45,7 @@
       <el-form :model="form" :rules="rules" ref="formRef" label-width="80px">
         <el-form-item label="图片" prop="imageUrl">
           <el-upload
-            :action="`${baseURL}/api/upload/image`"
+            :action="`${baseURL}/upload/image`"
             :headers="{ Authorization: `Bearer ${userStore.token}` }"
             list-type="picture-card"
             :limit="1"
@@ -82,10 +82,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, UploadFile } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { bannerApi, type Banner } from '@/api/banner'
+import { UploadResponse } from '@/api/upload'
 
 const userStore = useUserStore()
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
@@ -120,7 +121,12 @@ const rules = {
 
 const getImageUrl = (path: string) => {
   if (!path) return ''
-  return path.startsWith('http') ? path : baseURL + path
+  // 如果已经是完整URL或绝对路径（以/uploads开头），直接返回
+  if (path.startsWith('http') || path.startsWith('/uploads')) {
+    return path
+  }
+  // 其他情况（如开发环境可能直接拼 baseURL），保留原逻辑
+  return baseURL + path
 }
 
 // 获取列表
@@ -134,6 +140,7 @@ const fetchBanners = async () => {
     bannerList.value = res.content
     total.value = res.totalElements
   } catch (error) {
+    console.log(error);
     ElMessage.error('获取轮播图列表失败')
   } finally {
     loading.value = false
@@ -196,10 +203,15 @@ const toggleEnabled = async (row: Banner) => {
 }
 
 // 图片上传
-const handleUploadSuccess = (response: any, file: any) => {
+const handleUploadSuccess = (response: UploadResponse, _file: UploadFile) => {
+  void _file
   const url = response.data?.url || response.url
   if (url) {
     form.imageUrl = url
+    console.log('图片URL已设置:', url)
+  } else {
+    console.warn('上传响应中未找到URL', response)
+    ElMessage.error('图片上传失败，响应格式异常')
   }
 }
 const handleUploadRemove = () => {
@@ -234,6 +246,8 @@ const submitForm = async () => {
     fetchBanners()
   } catch (error) {
     // 错误已由拦截器处理
+    console.log(error);
+    
   } finally {
     submitting.value = false
   }

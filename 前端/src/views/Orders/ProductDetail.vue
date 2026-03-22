@@ -154,6 +154,7 @@ const quantity = ref(1)
 const getImageUrl = (path: string) => {
   if (!path) return ''
   if (path.startsWith('http')) return path
+  if (path.startsWith('/uploads')) return path  
   return baseURL + path
 }
 

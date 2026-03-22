@@ -71,7 +71,7 @@ const router = useRouter()
 
 // 销量趋势数据
 const trendLoading = ref(false)
-const trendData = ref({ dates: [], salesAmount: [] })
+const trendData = ref<{ dates: string[]; salesAmount: number[] }>({ dates: [], salesAmount: [] })
 
 // 轮播图模拟数据
 const carouselCount = ref(5)

@@ -39,8 +39,12 @@ const carouselList = ref<Banner[]>([])
 
 const getImageUrl = (path: string) => {
   if (!path) return ''
-  const fullUrl = path.startsWith('http') ? path : baseURL + path
-  return fullUrl
+  // 如果已经是完整 URL 或绝对路径（以 /uploads 开头），直接返回
+  if (path.startsWith('http') || path.startsWith('/uploads')) {
+    return path
+  }
+  // 其他情况（如开发环境可能直接拼接 baseURL），保留原逻辑
+  return baseURL + path
 }
 
 const fetchBanners = async () => {

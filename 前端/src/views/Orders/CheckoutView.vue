@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, type FormInstance } from 'element-plus'
 import { useCartStore } from '@/stores/cart'
 import { orderApi } from '@/api/order'
 
@@ -91,7 +91,7 @@ const totalAmount = computed(() => {
 })
 
 // 表单
-const formRef = ref()
+const formRef = ref<FormInstance | null>(null)
 const form = ref({
   consignee: '',
   phone: '',
@@ -112,7 +112,7 @@ const submitting = ref(false)
 
 // 提交订单
 const submitOrder = async () => {
-  await formRef.value.validate()
+  await formRef.value?.validate()
   if (selectedItems.value.length === 0) {
     ElMessage.warning('请选择要购买的商品')
     return
@@ -136,8 +136,13 @@ const submitOrder = async () => {
     })
     ElMessage.success('订单创建成功')
     router.push(`/order/${newOrder.id}`)
-  } catch (error: any) {
-    ElMessage.error(error.response?.data?.message || '创建订单失败')
+  } catch (error: unknown) {
+    let errorMsg = '创建订单失败'
+    if (error && typeof error === 'object' && 'response' in error) {
+      const err = error as { response?: { data?: { message?: string } } }
+      errorMsg = err.response?.data?.message || errorMsg
+    }
+    ElMessage.error(errorMsg)
   } finally {
     submitting.value = false
   }

@@ -136,18 +136,28 @@ const formatDate = (dateStr: string) => {
 const fetchOrders = async () => {
   loading.value = true
   try {
-    const params: any = {
-      page: currentPage.value - 1,
+    const params: {
+      page: number
+      size: number
+      status?: string
+      keyword?: string
+      startDate?: string
+      endDate?: string
+    } = {
+      page: currentPage.value,
       size: pageSize.value,
-      status: filter.status || undefined,
-      keyword: filter.keyword || undefined,
-      startDate: dateRange.value?.[0],
-      endDate: dateRange.value?.[1]
     }
+    if (filter.status) params.status = filter.status
+    if (filter.keyword) params.keyword = filter.keyword
+    if (dateRange.value?.[0]) params.startDate = dateRange.value[0]
+    if (dateRange.value?.[1]) params.endDate = dateRange.value[1]
+
     const res = await orderApi.getAllOrders(params)
     orders.value = res.content
     total.value = res.totalElements
   } catch (error) {
+    console.log(error);
+    
     ElMessage.error('获取订单失败')
   } finally {
     loading.value = false

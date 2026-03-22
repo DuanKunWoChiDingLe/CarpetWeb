@@ -28,15 +28,15 @@
 
       <!-- 商品图片列 -->
       <el-table-column label="商品图片" width="100">
-  <template #default="{ row }">
-    <el-image
-  :src="getImageUrl(row.image)"
-  :preview-src-list="[getImageUrl(row.image)]"
-  fit="cover"
-  style="width: 60px; height: 60px; border-radius: 4px;"
-  lazy
-/>
-  </template>
+        <template #default="{ row }">
+          <el-image
+            :src="getImageUrl(row.image)"
+            :preview-src-list="[getImageUrl(row.image)]"
+            fit="cover"
+            style="width: 60px; height: 60px; border-radius: 4px;"
+            lazy
+          />
+        </template>
       </el-table-column>
 
       <!-- 商品名称 -->
@@ -56,7 +56,7 @@
             v-model="row.quantity"
             :min="1"
             size="small"
-            @change="(value) => handleQuantityChange(row.id, value)"
+            @change="(value: number) => handleQuantityChange(row.id, value)"
           />
         </template>
       </el-table-column>
@@ -101,11 +101,11 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCartStore } from '@/stores/cart'
 import { useUserStore } from '@/stores/user'
-import type { CartItem } from '@/stores/cart'
+import type { CartItem } from '@/api/cart'
 
 const router = useRouter()
 const cartStore = useCartStore()
-const userStore = useUserStore() 
+const userStore = useUserStore()
 
 // 表格实例，用于全选操作
 const multipleTable = ref()
@@ -117,6 +117,11 @@ const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 const getImageUrl = (path: string) => {
   if (!path) return ''
   if (path.startsWith('http')) return path
+  // 如果路径以 /uploads 开头，直接返回（不拼接 baseURL）
+  if (path.startsWith('/uploads')) {
+    return path
+  }
+  // 其他情况（如开发环境可能直接相对路径）才拼接 baseURL
   return baseURL + path
 }
 
@@ -145,8 +150,10 @@ const selectedCount = computed(() => selectedRows.value.length)
 
 // 选中商品总价
 const selectedTotal = computed(() => {
-  return selectedRows.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  return selectedRows.value.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0)
 })
+
+const ids = selectedRows.value.map((item: CartItem) => item.id).join(',')
 
 // 监听表格选择变化
 const handleSelectionChange = (rows: CartItem[]) => {

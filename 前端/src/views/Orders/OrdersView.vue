@@ -28,10 +28,10 @@
         <div class="order-items">
           <div v-for="item in order.items || []" :key="item.id" class="order-item">
             <el-image :src="getImageUrl(item.productImage)" class="item-image" fit="cover">
-  <template #error>
-    <div class="image-error">图片加载失败</div>
-  </template>
-</el-image>
+              <template #error>
+                <div class="image-error">图片加载失败</div>
+              </template>
+            </el-image>
             <div class="item-info">
               <div class="item-name">{{ item.productName }}</div>
               <div class="item-price">¥{{ item.price.toFixed(2) }} × {{ item.quantity }}</div>
@@ -40,7 +40,7 @@
         </div>
         <div class="order-footer">
           <span class="order-total">
-            共 {{ order.items?.length || [] }} 件商品 合计：
+            共 {{ order.items?.length || 0 }} 件商品 合计：
             <span class="total-price">¥{{ order.totalAmount.toFixed(2) }}</span>
           </span>
           <div class="order-actions">
@@ -96,7 +96,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, type TabsPaneContext } from 'element-plus'
 import { orderApi, type Order } from '@/api/order'
 import PayDialog from '@/components/order/PayDialog.vue'
 
@@ -105,6 +105,7 @@ const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 const getImageUrl = (path?: string) => {
   if (!path) return ''
   if (path.startsWith('http')) return path
+  if (path.startsWith('/uploads')) return path
   return baseURL + path
 }
 
@@ -154,7 +155,11 @@ const formatDate = (dateStr: string) => {
 const fetchOrders = async () => {
   loading.value = true
   try {
-    const params: any = {
+    const params: {
+      page: number
+      size: number
+      status?: string
+    } = {
       page: currentPage.value - 1,
       size: pageSize.value
     }
@@ -162,11 +167,10 @@ const fetchOrders = async () => {
       params.status = activeStatus.value
     }
     const res = await orderApi.getMyOrders(params)
-    res.content = res.content.map(order => ({
-  ...order,
-  items: order.items || []
-}))
-    orders.value = res.content
+    orders.value = res.content.map(order => ({
+      ...order,
+      items: order.items || []
+    }))
     total.value = res.totalElements
   } catch (error) {
     ElMessage.error('获取订单失败')
@@ -176,7 +180,8 @@ const fetchOrders = async () => {
 }
 
 // 切换标签
-const handleTabClick = () => {
+const handleTabClick = (tab: TabsPaneContext) => {
+  activeStatus.value = tab.props.name
   currentPage.value = 1
   fetchOrders()
 }

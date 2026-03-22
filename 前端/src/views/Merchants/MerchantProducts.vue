@@ -100,7 +100,7 @@
           <el-input v-model="form.spec" placeholder="例如 4m宽 / 50x50" />
         </el-form-item>
         <el-form-item label="封面图" prop="coverImage">
-          <el-upload v-model:file-list="coverFileList" :action="`${baseURL}/api/upload/image`"
+          <el-upload v-model:file-list="coverFileList" :action="`${baseURL}/upload/image`"
             :headers="{ Authorization: `Bearer ${userStore.token}` }" list-type="picture-card" :limit="1"
             :on-success="handleCoverSuccess" :on-remove="handleCoverRemove">
             <el-icon>
@@ -123,11 +123,12 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, type FormInstance, type UploadFile } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
-import { brandApi } from '@/api/brand'
+import { brandApi, type Brand } from '@/api/brand'
 import { seriesApi, type Series } from '@/api/series'
+import { type UploadResponse } from '@/api/upload'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -160,6 +161,8 @@ const fetchBrands = async () => {
       ElMessage.warning('暂无品牌数据，请先添加品牌')
     }
   } catch (error) {
+    console.log(error);
+    
     ElMessage.error('获取品牌列表失败')
   }
 }
@@ -168,18 +171,28 @@ const fetchBrands = async () => {
 const fetchSeries = async () => {
   loading.value = true
   try {
-    const params = {
+    const params: {
+      page: number
+      size: number
+      brandId?: number
+      layType?: string
+      material?: string
+      keyword?: string
+    } = {
       page: currentPage.value - 1,
       size: pageSize.value,
-      brandId: filters.brandId,
-      layType: filters.layType || undefined,
-      material: filters.material || undefined,
-      keyword: filters.keyword || undefined
     }
+    if (filters.brandId) params.brandId = filters.brandId
+    if (filters.layType) params.layType = filters.layType
+    if (filters.material) params.material = filters.material
+    if (filters.keyword) params.keyword = filters.keyword
+
     const res = await seriesApi.getPage(params)
     seriesList.value = res.content
     total.value = res.totalElements
   } catch (error) {
+    console.log(error);
+    
     ElMessage.error('获取系列列表失败')
   } finally {
     loading.value = false
@@ -213,7 +226,7 @@ const handleCurrentChange = (page: number) => {
 const dialogVisible = ref(false)
 const dialogTitle = ref('新增系列')
 const submitting = ref(false)
-const formRef = ref()
+const formRef = ref<FormInstance | null>(null)
 const form = reactive({
   id: 0,
   brandId: undefined as number | undefined,
@@ -224,7 +237,7 @@ const form = reactive({
   coverImage: '',
   description: ''
 })
-const coverFileList = ref<any[]>([])
+const coverFileList = ref<UploadFile[]>([])
 
 const rules = {
   brandId: [{ required: true, message: '请选择品牌', trigger: 'change' }],
@@ -234,7 +247,7 @@ const rules = {
   spec: [{ required: true, message: '请输入规格', trigger: 'blur' }]
 }
 
-const handleCoverSuccess = (response: any) => {
+const handleCoverSuccess = (response: UploadResponse, file: UploadFile) => {
   // 兼容两种格式：直接返回 {url} 或 {code, data:{url}}
   const url = response.url || response.data?.url
   if (url) {
@@ -264,7 +277,7 @@ const editSeries = (series: Series) => {
       url: baseURL + series.coverImage,
       response: { url: series.coverImage },
       status: 'success'
-    }]
+    }] as UploadFile[]
   } else {
     coverFileList.value = []
   }
@@ -292,11 +305,11 @@ const resetForm = () => {
   formRef.value?.clearValidate()
 }
 const submitForm = async () => {
-  await formRef.value.validate()
+  await formRef.value?.validate()
   submitting.value = true
   try {
     const submitData = {
-      brandId: form.brandId,
+      brandId: form.brandId!,
       name: form.name,
       layType: form.layType,
       material: form.material,
@@ -311,11 +324,11 @@ const submitForm = async () => {
       await seriesApi.add(submitData)
       ElMessage.success('新增成功')
     }
-    dialogVisible.value = false   // 成功时关闭
+    dialogVisible.value = false
     fetchSeries()
-  } catch (error) {
+  } catch (error: unknown) {
+    console.log(error);
     ElMessage.error('操作失败，请重试')
-    dialogVisible.value = false   // 测试：错误时也关闭，观察是否能关
   } finally {
     submitting.value = false
   }
@@ -324,14 +337,18 @@ const submitForm = async () => {
 const getImageUrl = (path?: string) => {
   if (!path) {
     // 返回默认图片路径（根据你的实际存放位置调整）
-    return new URL('/src/assets/default-cover.jpg', import.meta.url).href
+    return '/default-cover.jpg'  // 建议将默认图片放在 public 目录下
   }
   if (path.startsWith('http')) {
     return path
   }
+  // 如果路径以 /uploads 开头，直接返回（不需要拼接 baseURL）
+  if (path.startsWith('/uploads')) {
+    return path
+  }
+  // 其他情况（如开发环境相对路径）才拼接 baseURL
   return baseURL + path
 }
-
 
 // 查看详情
 const viewDetail = (series: Series) => {
