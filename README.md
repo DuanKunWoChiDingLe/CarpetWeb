@@ -3,7 +3,7 @@
 ## 技术栈
 
 - 前端：Vue 3 + TypeScript + Vite + Element Plus
-- 后端：Spring Boot 3 + MyBatis-Plus + MySQL
+- 后端：Spring Boot 3 + MyBatis-Plus + PostgreSQL
 - 鉴权：JWT + Spring Security
 
 ## 本地启动
@@ -55,39 +55,36 @@ cd backend
 - 普通登录用户只能上传个人头像，不能修改商品或商家数据。
 - 公开注册只能创建普通用户，商家账号不能通过公开注册接口自行获得。
 
-## Render 部署
+## Render 免费部署
 
 仓库根目录提供 `render.yaml`，可在 Render Dashboard 中选择 **New → Blueprint** 并连接本仓库部署。
 
 Blueprint 会创建：
 
-- `carpetweb-web`：Vue 静态站点，包含 SPA 路由回退。
-- `carpetweb-api`：Spring Boot Docker Web Service。
-- `carpetweb-mysql`：MySQL 8 私有服务，挂载 10 GB 持久化磁盘。
-- `carpetweb-api` 的上传目录挂载 5 GB 持久化磁盘。
+- `carpetweb-web`：Vue 静态站点，免费。
+- `carpetweb-api`：Spring Boot Free Web Service。
+- `carpetweb-postgres`：Render Free PostgreSQL 数据库。
 
 首次创建 Blueprint 时，Render 会要求填写：
 
-- `ORDER_PAY_PASSWORD`：请输入 6 位数字支付密码，需与前端支付弹窗格式一致。
+- `ORDER_PAY_PASSWORD`：请输入 6 位数字支付密码。
 
-Render 会自动生成并连接以下密钥：
+Render 会自动生成并连接：
 
-- MySQL 用户密码和 root 密码
+- PostgreSQL 数据库连接信息
 - JWT 签名密钥
 
 部署完成后：
 
 1. 打开 `carpetweb-web` 的 `onrender.com` 地址访问前端。
-2. 数据库首次启动时会自动导入 `daocheng_dp.sql`。
-3. `backend/seed-uploads` 中的图片会在首次启动时复制到上传磁盘。
-4. 如绑定自定义域名，请修改 `carpetweb-api` 的 `CORS_ALLOWED_ORIGIN_PATTERNS`，加入前端域名，例如：
-   `https://www.example.com,https://*.onrender.com`
+2. 后端首次启动时自动执行 `schema.sql` 和 `data.sql`，完成 PostgreSQL 建表及初始数据导入。
+3. `backend/seed-uploads` 中的图片会在每次容器启动时复制到 `/tmp/uploads`。
 
-注意：
+免费方案限制：
 
-- Render 私有服务和持久化磁盘需要付费实例。
-- Render 没有托管 MySQL，因此这里使用官方 MySQL 8 Docker 镜像作为私有服务。
-- 生产环境建议使用 `mysqldump` 做数据库备份，不要仅依赖磁盘快照。
-- 当前 Blueprint 默认使用新加坡区域和 `0.5c-512mb` 实例，可按流量和预算在 Render 控制台升级。
-
+- Free Web Service 空闲约 15 分钟后休眠，首次访问会重新启动。
+- Free PostgreSQL 容量为 1 GB，并在创建 30 天后过期。
+- Free Web Service 没有持久化磁盘，因此新上传的图片在服务重启或重新部署后会丢失；内置商品图片会在启动时自动恢复。
+- 如需保留用户上传，请后续接入 Cloudinary、S3 等对象存储。
+- 当前方案不需要在 Render 绑定银行卡，除非后续升级到付费实例。
 

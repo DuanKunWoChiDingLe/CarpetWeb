@@ -1,33 +1,15 @@
 # yaml-language-server: $schema=https://render.com/schema/render.yaml.json
 
-services:
-  # MySQL is not offered as a managed Render database, so it runs as a private
-  # Docker service with a persistent disk and the bundled initial schema.
-  - type: pserv
-    name: carpetweb-mysql
-    runtime: docker
-    plan: 0.5c-512mb
+databases:
+  - name: carpetweb-postgres
+    plan: free
     region: singapore
-    dockerfilePath: ./deploy/mysql/Dockerfile
-    dockerContext: .
-    envVars:
-      - key: MYSQL_DATABASE
-        value: daocheng_dp
-      - key: MYSQL_USER
-        value: carpetweb
-      - key: MYSQL_PASSWORD
-        generateValue: true
-      - key: MYSQL_ROOT_PASSWORD
-        generateValue: true
-    disk:
-      name: carpetweb-mysql-data
-      mountPath: /var/lib/mysql
-      sizeGB: 10
 
+services:
   - type: web
     name: carpetweb-api
     runtime: docker
-    plan: 0.5c-512mb
+    plan: free
     region: singapore
     rootDir: backend
     dockerfilePath: ./Dockerfile
@@ -36,24 +18,25 @@ services:
     autoDeployTrigger: commit
     envVars:
       - key: DB_HOST
-        fromService:
-          type: pserv
-          name: carpetweb-mysql
+        fromDatabase:
+          name: carpetweb-postgres
           property: host
       - key: DB_PORT
-        fromService:
-          type: pserv
-          name: carpetweb-mysql
+        fromDatabase:
+          name: carpetweb-postgres
           property: port
       - key: DB_NAME
-        value: daocheng_dp
+        fromDatabase:
+          name: carpetweb-postgres
+          property: database
       - key: DB_USERNAME
-        value: carpetweb
+        fromDatabase:
+          name: carpetweb-postgres
+          property: user
       - key: DB_PASSWORD
-        fromService:
-          type: pserv
-          name: carpetweb-mysql
-          envVarKey: MYSQL_PASSWORD
+        fromDatabase:
+          name: carpetweb-postgres
+          property: password
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRATION
@@ -61,15 +44,11 @@ services:
       - key: ORDER_PAY_PASSWORD
         sync: false # Enter a 6-digit payment password when creating the Blueprint
       - key: FILE_UPLOAD_PATH
-        value: /var/data/uploads
+        value: /tmp/uploads
       - key: CORS_ALLOWED_ORIGIN_PATTERNS
         value: https://*.onrender.com
       - key: JAVA_OPTS
-        value: -XX:MaxRAMPercentage=75
-    disk:
-      name: carpetweb-uploads
-      mountPath: /var/data
-      sizeGB: 5
+        value: -XX:MaxRAMPercentage=70
 
   - type: web
     name: carpetweb-web
@@ -79,7 +58,6 @@ services:
     staticPublishPath: dist
     autoDeployTrigger: commit
     envVars:
-      # Render exposes this value from the API service to the static site build.
       - key: VITE_API_ORIGIN
         fromService:
           type: web
@@ -99,8 +77,3 @@ services:
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
-
-
-
-
-
