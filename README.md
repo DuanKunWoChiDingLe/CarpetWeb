@@ -10,10 +10,10 @@
 
 ### 1. 后端
 
-后端敏感配置通过环境变量提供，示例见 `后端/.env.example`。
+后端敏感配置通过环境变量提供，示例见 `backend/.env.example`。
 
 ```powershell
-cd 后端
+cd backend
 $env:DB_PASSWORD='你的数据库密码'
 $env:JWT_SECRET='至少32位的随机字符串'
 $env:ORDER_PAY_PASSWORD='你的支付校验密码'
@@ -26,7 +26,7 @@ $env:FILE_UPLOAD_PATH='F:/uploads'
 ### 2. 前端
 
 ```powershell
-cd 前端
+cd frontend
 npm install
 npm run dev
 ```
@@ -38,13 +38,13 @@ npm run dev
 ## 常用检查
 
 ```powershell
-cd 前端
+cd frontend
 npm run type-check
 npm run build-only
 ```
 
 ```powershell
-cd 后端
+cd backend
 .\mvnw.cmd test
 ```
 
@@ -79,7 +79,7 @@ Render 会自动生成并连接以下密钥：
 
 1. 打开 `carpetweb-web` 的 `onrender.com` 地址访问前端。
 2. 数据库首次启动时会自动导入 `daocheng_dp.sql`。
-3. `后端/seed-uploads` 中的图片会在首次启动时复制到上传磁盘。
+3. `backend/seed-uploads` 中的图片会在首次启动时复制到上传磁盘。
 4. 如绑定自定义域名，请修改 `carpetweb-api` 的 `CORS_ALLOWED_ORIGIN_PATTERNS`，加入前端域名，例如：
    `https://www.example.com,https://*.onrender.com`
 
@@ -89,4 +89,5 @@ Render 会自动生成并连接以下密钥：
 - Render 没有托管 MySQL，因此这里使用官方 MySQL 8 Docker 镜像作为私有服务。
 - 生产环境建议使用 `mysqldump` 做数据库备份，不要仅依赖磁盘快照。
 - 当前 Blueprint 默认使用新加坡区域和 `0.5c-512mb` 实例，可按流量和预算在 Render 控制台升级。
+
 

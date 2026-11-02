@@ -29,7 +29,7 @@ services:
     runtime: docker
     plan: 0.5c-512mb
     region: singapore
-    rootDir: 后端
+    rootDir: backend
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /api/public/banners
@@ -74,7 +74,7 @@ services:
   - type: web
     name: carpetweb-web
     runtime: static
-    rootDir: 前端
+    rootDir: frontend
     buildCommand: npm ci && npm run build-only
     staticPublishPath: dist
     autoDeployTrigger: commit
@@ -99,6 +99,7 @@ services:
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
+
 
 
 

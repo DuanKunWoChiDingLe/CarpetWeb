@@ -1,8 +1,9 @@
 .git
 .gitignore
-前端/node_modules
-前端/dist
-前端/*.tsbuildinfo
-后端/target
-后端/.idea
+frontend/node_modules
+frontend/dist
+frontend/*.tsbuildinfo
+backend/target
+backend/.idea
 **/*.log
+
