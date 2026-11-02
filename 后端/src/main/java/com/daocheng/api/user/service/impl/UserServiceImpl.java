@@ -17,11 +17,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +46,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUsername(request.getUsername());
         user.setNickname(request.getNickname() != null ? request.getNickname() : request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole() != null ? request.getRole() : UserRoleConstant.ROLE_CUSTOMER);
+        user.setRole(UserRoleConstant.ROLE_CUSTOMER);
         user.setAvatar(null); // 默认无头像
         save(user);
 
@@ -117,12 +119,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user == null) {
             throw new UsernameNotFoundException("用户不存在");
         }
-        // 暂时不分配角色，后续如需角色权限可添加 GrantedAuthority
+        String role = user.getRole() == null ? UserRoleConstant.ROLE_CUSTOMER : user.getRole().toUpperCase(Locale.ROOT);
         return new CustomUserDetails(
                 user.getUsername(),
                 user.getPassword(),
-                new ArrayList<>(),
+                List.of(new SimpleGrantedAuthority("ROLE_" + role)),
                 user.getId()
         );
     }
 }
+
+

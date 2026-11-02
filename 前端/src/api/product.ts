@@ -122,7 +122,7 @@ export interface Product {
   stock: number
   images: string[]
   description?: string
-  status: 0 | 1
+  status: number
   createdAt?: string
 }
 
@@ -156,7 +156,7 @@ export const productApi = {
   },
 
   // 新增商品
-  async add(data: Omit<Product, 'id' | 'seriesName' | 'brandName'>): Promise<Product> {
+  async add(data: Partial<Omit<Product, 'id' | 'seriesName' | 'brandName'>>): Promise<Product> {
     const response = await request.post<ApiResponse<Product>>('/products', data)
     return response.data
   },
@@ -210,3 +210,5 @@ export const productApi = {
     }
   }
 }
+
+

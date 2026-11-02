@@ -64,9 +64,10 @@
 
     <!-- 支付弹窗 -->
     <PayDialog
+      v-if="order"
       ref="payDialogRef"
-      :order-id="order?.id"
-      :order-no="order?.orderNo"
+      :order-id="order.id"
+      :order-no="order.orderNo"
       @success="handlePaySuccess"
     />
   </div>
@@ -209,3 +210,4 @@ onMounted(() => {
   justify-content: center;
 }
 </style>
+

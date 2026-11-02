@@ -30,7 +30,7 @@
             <el-carousel-item v-for="(img, index) in product.images" :key="index">
               <el-image
                 :src="getImageUrl(img)"
-                :preview-src-list="product.images.map(getImageUrl)"
+                :preview-src-list="product.images.map(img => getImageUrl(img))"
                 fit="cover"
                 class="gallery-image"
                 lazy
@@ -125,13 +125,12 @@ import { ElMessage } from 'element-plus'
 import { useCartStore } from '@/stores/cart'
 import { productApi, type Product } from '@/api/product'
 import { useUserStore } from '@/stores/user'
+import { getImageUrl } from '@/utils/image'
 
 const route = useRoute()
 const router = useRouter()
 const cartStore = useCartStore()
 const userStore = useUserStore()
-
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 // 材质映射
 const materialMap: Record<string, string> = {
@@ -151,12 +150,6 @@ const loading = ref(false)
 const quantity = ref(1)
 
 // 获取图片完整URL
-const getImageUrl = (path: string) => {
-  if (!path) return ''
-  if (path.startsWith('http')) return path
-  if (path.startsWith('/uploads')) return path  
-  return baseURL + path
-}
 
 // 获取商品详情
 const fetchProductDetail = async () => {
@@ -325,3 +318,4 @@ onMounted(() => {
   flex: 1;
 }
 </style>
+

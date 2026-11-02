@@ -21,7 +21,7 @@
 //   stompClient = new Client({
 //     webSocketFactory: () => socket,
 //     reconnectDelay: 5000,
-//     debug: (str) => console.log('[STOMP]', str),
+//     debug: import.meta.env.DEV ? (str) => console.log('[STOMP]', str) : () => {},
 //     onConnect: () => {
 //       isConnected = true
 //       console.log('WebSocket 连接成功')
@@ -87,7 +87,8 @@
 // }
 
 import SockJS from 'sockjs-client'
-import { Client, Message, IFrame } from '@stomp/stompjs'
+import { Client, type Message, type IFrame } from '@stomp/stompjs'
+import { wsBaseUrl } from '@/config/runtime'
 
 // 单例 WebSocket 连接
 let stompClient: Client | null = null
@@ -96,20 +97,17 @@ let isConnected = false
 // 消息回调映射，消息体类型未知，使用 unknown 让调用者自行断言
 const subscriptions: Map<string, (msg: unknown) => void> = new Map()
 
-// 获取基础 URL（用于 WebSocket 端点）
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-
 export const connectWebSocket = (onConnect?: () => void, onError?: (error: IFrame | Event) => void) => {
   if (stompClient && isConnected) {
     onConnect?.()
     return
   }
 
-  const socket = new SockJS(`/ws`)
+  const socket = new SockJS(`${wsBaseUrl}/ws`)
   stompClient = new Client({
     webSocketFactory: () => socket,
     reconnectDelay: 5000,
-    debug: (str) => console.log('[STOMP]', str),
+    debug: import.meta.env.DEV ? (str) => console.log('[STOMP]', str) : () => {},
     onConnect: () => {
       isConnected = true
       console.log('WebSocket 连接成功')
@@ -173,3 +171,5 @@ export const sendMessage = (destination: string, body: Record<string, unknown>) 
     console.warn('WebSocket 未连接，消息未发送')
   }
 }
+
+

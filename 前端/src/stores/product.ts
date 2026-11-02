@@ -39,17 +39,17 @@ export const useProductStore = defineStore('product', () => {
     // 关键词搜索
     if (filterParams.keyword) {
       const kw = filterParams.keyword.toLowerCase()
-      result = result.filter(p => p.name.toLowerCase().includes(kw) || p.brand.toLowerCase().includes(kw))
+      result = result.filter(p => p.name.toLowerCase().includes(kw) || (p.brand || p.brandName || '').toLowerCase().includes(kw))
     }
 
     // 品牌
     if (filterParams.brand) {
-      result = result.filter(p => p.brand === filterParams.brand)
+      result = result.filter(p => (p.brand || p.brandName) === filterParams.brand)
     }
 
     // 类型
     if (filterParams.types.length > 0) {
-      result = result.filter(p => filterParams.types.includes(p.type))
+      result = result.filter(p => filterParams.types.includes(p.type || p.layType || ''))
     }
 
     // 价格区间
@@ -135,3 +135,4 @@ export const useProductStore = defineStore('product', () => {
     resetFilter
   }
 })
+

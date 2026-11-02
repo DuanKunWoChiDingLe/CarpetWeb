@@ -1,7 +1,8 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios'
+import { apiBaseUrl } from '@/config/runtime'
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: apiBaseUrl,
   timeout: 10000,
 })
 
@@ -41,3 +42,4 @@ export interface RequestInstance {
 const request = instance as RequestInstance
 
 export default request
+

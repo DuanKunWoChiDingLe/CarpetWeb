@@ -6,6 +6,7 @@ import com.daocheng.api.product.dto.response.BrandResponse;
 import com.daocheng.api.product.service.BrandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,16 +23,19 @@ public class BrandController {
         return Result.success(brandService.getAllBrands());
     }
 
+    @PreAuthorize("hasRole('MERCHANT')")
     @PostMapping
     public Result<BrandResponse> addBrand(@Valid @RequestBody BrandRequest request) {
         return Result.success(brandService.addBrand(request));
     }
 
+    @PreAuthorize("hasRole('MERCHANT')")
     @PutMapping("/{id}")
     public Result<BrandResponse> updateBrand(@PathVariable Long id, @Valid @RequestBody BrandRequest request) {
         return Result.success(brandService.updateBrand(id, request));
     }
 
+    @PreAuthorize("hasRole('MERCHANT')")
     @DeleteMapping("/{id}")
     public Result<Void> deleteBrand(@PathVariable Long id) {
         brandService.deleteBrand(id);

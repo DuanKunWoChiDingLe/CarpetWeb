@@ -129,10 +129,11 @@ import { useUserStore } from '@/stores/user'
 import { brandApi, type Brand } from '@/api/brand'
 import { seriesApi, type Series } from '@/api/series'
 import { type UploadResponse } from '@/api/upload'
+import { getImageUrl } from '@/utils/image'
+import { apiBaseUrl as baseURL } from '@/config/runtime'
 
 const router = useRouter()
 const userStore = useUserStore()
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 // 品牌选项
 const brandOptions = ref<Brand[]>([])
@@ -274,7 +275,7 @@ const editSeries = (series: Series) => {
   if (series.coverImage) {
     coverFileList.value = [{
       name: 'cover',
-      url: baseURL + series.coverImage,
+      url: getImageUrl(series.coverImage),
       response: { url: series.coverImage },
       status: 'success'
     }] as UploadFile[]
@@ -334,21 +335,6 @@ const submitForm = async () => {
   }
 }
 
-const getImageUrl = (path?: string) => {
-  if (!path) {
-    // 返回默认图片路径（根据你的实际存放位置调整）
-    return '/default-cover.jpg'  // 建议将默认图片放在 public 目录下
-  }
-  if (path.startsWith('http')) {
-    return path
-  }
-  // 如果路径以 /uploads 开头，直接返回（不需要拼接 baseURL）
-  if (path.startsWith('/uploads')) {
-    return path
-  }
-  // 其他情况（如开发环境相对路径）才拼接 baseURL
-  return baseURL + path
-}
 
 // 查看详情
 const viewDetail = (series: Series) => {
@@ -459,3 +445,4 @@ onMounted(() => {
   justify-content: flex-end;
 }
 </style>
+

@@ -16,7 +16,7 @@
         </el-carousel-item>
       </el-carousel>
       <!-- 无图片时显示默认占位图 -->
-      <el-image v-else :src="getImageUrl('/images/default.jpg')" fit="cover" class="single-image" />
+      <el-image v-else :src="DEFAULT_IMAGE" fit="cover" class="single-image" />
     </div>
 
     <!-- 商品信息 -->
@@ -47,28 +47,10 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ShoppingCart } from '@element-plus/icons-vue'
 import { useCartStore } from '@/stores/cart'
-import type { Product } from '@/types/product'
+import type { Product } from '@/api/product'
 import { useUserStore } from '@/stores/user'
+import { getImageUrl, DEFAULT_IMAGE } from '@/utils/image'
 
-// 从环境变量获取 API 基础地址
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-const userStore = useUserStore()
-
-// 处理图片路径：如果是相对路径，且以 /uploads 开头则直接返回，否则拼接 baseURL（但图片应使用绝对路径）
-const getImageUrl = (path: string) => {
-  if (!path) return ''
-  // 如果已经是完整 URL 或绝对路径（以 /uploads 开头），直接返回
-  if (path.startsWith('http') || path.startsWith('/uploads')) {
-    return path
-  }
-  // 其他情况（如默认图片），可能需要拼接 baseURL 或使用静态资源路径
-  // 这里假设默认图片放在 public 目录下，直接使用 /images/default.jpg
-  if (path.startsWith('/images/')) {
-    return path
-  }
-  // 兜底：拼接 baseURL（一般不会走到这里）
-  return baseURL + (path.startsWith('/') ? path : '/' + path)
-}
 
 const props = defineProps<{
   product: Product
@@ -76,6 +58,7 @@ const props = defineProps<{
 
 const router = useRouter()
 const cartStore = useCartStore()
+const userStore = useUserStore()
 
 const displayPrice = computed(() => {
   return props.product.pricePerSqm ? props.product.pricePerSqm.toFixed(2) : '0.00'
@@ -92,8 +75,7 @@ const goToDetail = (event?: MouseEvent) => {
   router.push(`/product/${props.product.id}`)
 }
 
-const addToCart = () => {
-  // 未登录，跳转登录页
+const addToCart = async () => {
   if (!userStore.isLoggedIn) {
     router.push({
       path: '/login',
@@ -101,12 +83,12 @@ const addToCart = () => {
     })
     return
   }
-  // 已登录，执行加入购物车逻辑
-  cartStore.addItem({
+
+  const success = await cartStore.addItem({
     productId: props.product.id,
     quantity: 1
   })
-  ElMessage.success('已加入购物车')
+  if (success) ElMessage.success('已加入购物车')
 }
 </script>
 
@@ -218,3 +200,6 @@ const addToCart = () => {
   background-color: #ecf5ff;
 }
 </style>
+
+
+

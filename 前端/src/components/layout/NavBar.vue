@@ -133,6 +133,7 @@ import { ElMessage } from 'element-plus'
 import { useCartStore } from '@/stores/cart'
 import { useUserStore } from '@/stores/user'
 import { useNotificationStore } from '@/stores/notification'
+import { getImageUrl } from '@/utils/image'
 
 const route = useRoute()
 const router = useRouter()
@@ -146,12 +147,9 @@ const cartCount = computed(() => cartStore.totalCount)
 
 const userAvatar = computed(() => {
   const avatar = userStore.userInfo?.avatar
-  if (avatar) {
-    if (avatar.startsWith('http')) return avatar
-    if (avatar.startsWith('/uploads')) return avatar
-    return (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080') + avatar
-  }
-  return 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+  return avatar
+    ? getImageUrl(avatar)
+    : 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 })
 
 const allMenus = computed(() => {
@@ -188,7 +186,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateWidth)
 })
 
-const isMobile = computed(() => windowWidth.value < 768)
+const isMobile = computed(() => windowWidth.value < 992)
 const visibleCount = computed(() => {
   const width = windowWidth.value
   if (width >= 1200) return allMenus.value.length
@@ -228,7 +226,6 @@ const handleUserCommand = (command: string) => {
     case 'orders': router.push('/orders'); break
     case 'logout':
       userStore.logout()
-      ElMessage.success('已退出登录')
       router.push('/')
       break
   }
@@ -586,3 +583,5 @@ const handleUserCommand = (command: string) => {
   }
 }
 </style>
+
+

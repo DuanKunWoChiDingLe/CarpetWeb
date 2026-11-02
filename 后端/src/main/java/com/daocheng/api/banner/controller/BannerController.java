@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/banners")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('merchant')") // 需要商家权限
+@PreAuthorize("hasRole('MERCHANT')") // 需要商家权限
 public class BannerController {
 
     private final BannerService bannerService;

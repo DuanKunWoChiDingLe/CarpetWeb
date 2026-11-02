@@ -1,0 +1,561 @@
+/* Global responsive rules for phone, tablet and desktop. */
+:root {
+  --page-gutter: 20px;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+#app .el-card {
+  max-width: 100%;
+}
+
+#app .el-dialog,
+#app .el-message-box {
+  max-width: calc(100vw - 24px);
+}
+
+#app .el-image,
+#app .el-image__inner {
+  max-width: 100%;
+}
+
+#app .el-pagination {
+  max-width: 100%;
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+#app .el-form-item__content {
+  min-width: 0;
+}
+
+#app .el-input,
+#app .el-select,
+#app .el-date-editor,
+#app .el-input-number {
+  max-width: 100%;
+}
+
+@media (max-width: 1199px) {
+  :root {
+    --page-gutter: 16px;
+  }
+
+  #app .products-view,
+  #app .series-detail,
+  #app .search-results,
+  #app .merchant-series,
+  #app .merchant-orders,
+  #app .merchant-series-detail,
+  #app .orders-view,
+  #app .checkout-view,
+  #app .cart-view,
+  #app .product-detail,
+  #app .profile-view {
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
+  }
+
+  #app .search-input {
+    width: 220px;
+  }
+}
+
+@media (max-width: 991px) {
+  #app .carousel-card {
+    padding: 14px;
+  }
+
+  #app .home-carousel .el-carousel__container {
+    height: 250px !important;
+  }
+
+  #app .dashboard-overview .cards-container {
+    gap: 14px;
+  }
+
+  #app .sales-stats .chart-card > .el-card__body > div[style*="height: 300px"] {
+    height: 220px !important;
+  }
+
+  #app .sales-stats .stat-cards {
+    row-gap: 10px;
+  }  #app .sales-stats .stat-value {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --page-gutter: 12px;
+  }
+
+  /* Shared layout */
+  #app .products-view,
+  #app .series-detail,
+  #app .search-results,
+  #app .merchant-series,
+  #app .merchant-orders,
+  #app .merchant-series-detail,
+  #app .orders-view,
+  #app .checkout-view,
+  #app .cart-view,
+  #app .product-detail,
+  #app .profile-view,
+  #app .merchant-dashboard {
+    margin-top: 14px !important;
+    margin-bottom: 20px !important;
+    padding-left: var(--page-gutter) !important;
+    padding-right: var(--page-gutter) !important;
+  }
+
+  #app .breadcrumb,
+  #app .dashboard-nav {
+    margin-bottom: 14px !important;
+  }
+
+  #app .el-card__body {
+    padding: 14px;
+  }
+
+  #app .el-dialog {
+    width: calc(100vw - 20px) !important;
+    margin-top: 5vh !important;
+  }
+
+  #app .el-dialog__body {
+    padding: 14px;
+  }
+
+  #app .el-form-item {
+    display: block;
+  }
+
+  #app .el-form-item__label {
+    width: auto !important;
+    justify-content: flex-start !important;
+    padding-bottom: 6px;
+  }
+
+  #app .el-form-item__content {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  #app .el-pagination {
+    justify-content: center !important;
+    padding: 0 !important;
+    font-size: 12px;
+  }
+
+  #app .el-pagination__sizes,
+  #app .el-pagination__jump {
+    display: none !important;
+  }
+
+  #app .el-table {
+    font-size: 12px;
+  }
+
+  #app .el-table .cell {
+    padding: 0 6px;
+  }
+
+  #app .el-table__fixed-right {
+    display: none !important;
+  }
+
+  #app .el-table__body-wrapper,
+  #app .el-table__header-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #app .el-button {
+    min-height: 38px;
+  }
+
+  /* Navigation */
+  #app .navbar {
+    height: 60px !important;
+  }
+
+  #app .navbar-container {
+    height: 60px;
+    gap: 5px !important;
+    padding: 0 8px !important;
+  }
+
+  #app .logo {
+    padding: 0 4px !important;
+  }
+
+  #app .logo-image {
+    height: 46px !important;
+    max-width: 88px;
+    object-fit: contain;
+  }
+
+  #app .nav-menu .el-menu-item {
+    height: 60px !important;
+    line-height: 60px !important;
+    padding: 0 6px !important;
+    font-size: 13px !important;
+  }
+
+  #app .more-link {
+    height: 60px !important;
+    padding: 0 4px !important;
+    font-size: 13px !important;
+  }
+
+  #app .navbar-actions {
+    gap: 3px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  #app .cart-icon {
+    padding: 5px;
+  }
+
+  #app .user-avatar {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* Home */
+  #app .home {
+    margin: 8px 0 !important;
+    padding: 8px 0 !important;
+  }
+
+  #app .home > .el-row > .el-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  #app .carousel-card {
+    margin: 0 10px 14px !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  #app .home-carousel,
+  #app .home-carousel .el-carousel__container {
+    height: 190px !important;
+  }
+
+  #app .hot-recommend,
+  #app .new-arrivals {
+    margin: 14px 10px !important;
+    padding: 14px 10px !important;
+    border-radius: 10px !important;
+  }
+
+  #app .hot-recommend .card-header {
+    margin-bottom: 12px;
+  }
+
+  #app .hot-recommend .product-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px !important;
+  }
+
+  #app .hot-recommend .product-card {
+    width: 100% !important;
+    max-width: none !important;
+    flex: none !important;
+  }
+
+  #app .new-arrivals .el-row {
+    margin-left: -6px !important;
+    margin-right: -6px !important;
+  }
+
+  #app .new-arrivals .el-col {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+
+  #app .product-card .image-container,
+  #app .product-card .product-carousel,
+  #app .product-card .single-image {
+    height: 145px !important;
+  }
+
+  #app .product-card .product-info {
+    padding: 10px !important;
+  }
+
+  #app .product-card .product-title {
+    font-size: 14px !important;
+  }
+
+  #app .product-card .price-number {
+    font-size: 16px !important;
+  }
+
+  #app .product-card .cart-btn-circle {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 17px !important;
+  }
+
+  /* Product list and filters */
+  #app .filter-sidebar {
+    padding: 14px !important;
+  }
+
+  #app .filter-section {
+    margin-bottom: 16px !important;
+  }
+
+  #app .filter-sidebar .el-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+
+  #app .products-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  #app .series-card .el-card__header {
+    padding: 12px !important;
+  }
+
+  #app .series-header {
+    align-items: flex-start !important;
+  }
+
+  #app .series-title {
+    flex-wrap: wrap;
+  }
+
+  #app .series-card-wrapper {
+    margin-bottom: 18px !important;
+  }
+
+  /* Product detail */
+  #app .product-detail .gallery-container,
+  #app .product-detail .gallery-image,
+  #app .product-detail .no-image,
+  #app .product-detail .el-carousel__container {
+    height: 260px !important;
+  }
+
+  #app .product-detail .info-container {
+    padding: 14px 0 !important;
+  }
+
+  #app .product-detail .product-name {
+    font-size: 22px !important;
+  }
+
+  #app .product-detail .product-price .price {
+    font-size: 24px !important;
+  }
+
+  #app .product-detail .button-wrapper {
+    gap: 10px !important;
+  }
+
+  #app .product-detail .button-wrapper .el-button {
+    min-width: 0;
+  }
+
+  /* Cart and checkout */
+  #app .cart-footer {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px;
+  }
+
+  #app .footer-left,
+  #app .footer-right {
+    width: 100%;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    flex-wrap: wrap;
+  }
+
+  #app .footer-right .el-button {
+    width: 100%;
+  }
+
+  #app .checkout-view .el-row > .el-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  #app .checkout-actions {
+    flex-wrap: wrap;
+  }
+
+  #app .checkout-actions .el-button {
+    flex: 1;
+    min-width: 130px;
+  }
+
+  /* Orders */
+  #app .order-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  #app .order-no {
+    flex: 0 0 100%;
+  }
+
+  #app .order-time {
+    margin-right: 0 !important;
+  }
+
+  #app .order-item {
+    align-items: flex-start !important;
+  }
+
+  #app .item-info {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 4px;
+  }
+
+  #app .order-footer {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+
+  #app .order-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  /* Merchant pages */
+  #app .filter-card .el-row > .el-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 8px;
+  }
+
+  #app .filter-card .el-button + .el-button {
+    margin-left: 8px;
+  }
+
+  #app .action-bar {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  #app .dashboard-nav .el-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  #app .merchant-series-detail .action-bar {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  #app .merchant-series-detail .sort-bar {
+    width: 100%;
+  }
+
+  #app .merchant-series-detail .product-grid > .el-col {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  #app .series-info-card .info-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  #app .sales-stats {
+    padding: 12px !important;
+  }
+
+  #app .sales-stats .stat-value {
+    font-size: 20px;
+  }
+
+  #app .report-item {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  #app .upload-tip {
+    width: 100%;
+  }
+
+  #app .el-upload-list--picture-card {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  #app .hot-recommend .product-row {
+    gap: 8px !important;
+  }
+
+  #app .product-card .image-container,
+  #app .product-card .product-carousel,
+  #app .product-card .single-image {
+    height: 128px !important;
+  }
+
+  #app .product-card .price-unit {
+    display: none;
+  }
+
+  #app .product-detail .gallery-container,
+  #app .product-detail .gallery-image,
+  #app .product-detail .no-image,
+  #app .product-detail .el-carousel__container {
+    height: 230px !important;
+  }
+
+  #app .merchant-series-detail .product-grid > .el-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  #app .carousel-card {
+    margin-left: 6px !important;
+    margin-right: 6px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+#app .checkout-actions {
+  display: flex;
+  gap: 10px;
+}
+
+

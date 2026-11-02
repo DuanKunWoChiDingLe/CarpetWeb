@@ -62,7 +62,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import { User, Lock, View, Hide } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 
@@ -89,7 +88,6 @@ const handleLogin = async () => {
   const success = await userStore.login(form.value.username, form.value.password)
   loading.value = false
   if (success) {
-    ElMessage.success('登录成功')
     // 获取 redirect 参数，默认跳转首页
     const redirect = route.query.redirect as string || '/'
     router.replace(redirect)  // 使用 replace 避免登录页留在历史中
@@ -227,3 +225,4 @@ const handleLogin = async () => {
   }
 }
 </style>
+

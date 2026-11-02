@@ -7,7 +7,7 @@
     </el-breadcrumb>
 
     <el-row :gutter="30">
-      <el-col :span="16">
+      <el-col :xs="24" :sm="24" :md="16" :lg="16">
         <el-card class="checkout-card">
           <template #header>
             <span>收货信息</span>
@@ -29,7 +29,7 @@
         </el-card>
       </el-col>
 
-      <el-col :span="8">
+      <el-col :xs="24" :sm="24" :md="8" :lg="8">
         <el-card class="checkout-card">
           <template #header>
             <span>订单汇总</span>
@@ -47,7 +47,7 @@
           </div>
         </el-card>
 
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <div class="checkout-actions" style="margin-top: 20px;">
           <el-button @click="router.back()">返回购物车</el-button>
           <el-button type="primary" size="large" @click="submitOrder" :loading="submitting">提交订单</el-button>
         </div>

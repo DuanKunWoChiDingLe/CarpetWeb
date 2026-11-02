@@ -9,7 +9,7 @@
     <!-- 筛选区 -->
     <el-card class="filter-card">
       <el-row :gutter="20" align="middle">
-        <el-col :span="4">
+        <el-col :xs="24" :sm="12" :md="4">
           <el-select v-model="filter.status" placeholder="订单状态" clearable>
             <el-option label="待付款" value="pending" />
             <el-option label="已付款" value="paid" />
@@ -18,10 +18,10 @@
             <el-option label="已取消" value="cancelled" />
           </el-select>
         </el-col>
-        <el-col :span="6">
+        <el-col :xs="24" :sm="12" :md="6">
           <el-input v-model="filter.keyword" placeholder="订单号/用户名" clearable />
         </el-col>
-        <el-col :span="6">
+        <el-col :xs="24" :sm="12" :md="6">
           <el-date-picker
             v-model="dateRange"
             type="daterange"
@@ -31,7 +31,7 @@
             value-format="YYYY-MM-DD"
           />
         </el-col>
-        <el-col :span="4">
+        <el-col :xs="24" :sm="12" :md="4">
           <el-button type="primary" @click="handleSearch">搜索</el-button>
           <el-button @click="resetFilter">重置</el-button>
         </el-col>
@@ -39,7 +39,7 @@
     </el-card>
 
     <!-- 订单表格 -->
-    <el-table :data="orders" v-loading="loading" border stripe>
+    <el-table class="merchant-orders-table" :data="orders" v-loading="loading" border stripe>
       <el-table-column prop="orderNo" label="订单号" width="180" />
       <el-table-column prop="userName" label="用户" width="120" />
       <el-table-column prop="totalAmount" label="金额" width="120">
@@ -72,6 +72,25 @@
       </el-table-column>
     </el-table>
 
+    <!-- 移动端订单卡片 -->
+    <div class="mobile-order-list">
+      <div v-for="order in orders" :key="order.id" class="mobile-order-card">
+        <div class="mobile-order-head">
+          <span class="mobile-order-no">{{ order.orderNo }}</span>
+          <el-tag :type="statusTagType(order.status)" size="small">{{ statusText(order.status) }}</el-tag>
+        </div>
+        <div class="mobile-order-meta">
+          <span>用户：{{ order.userName }}</span>
+          <span>金额：<strong>¥{{ order.totalAmount.toFixed(2) }}</strong></span>
+          <span>时间：{{ formatDate(order.createdAt) }}</span>
+        </div>
+        <div class="mobile-order-actions">
+          <el-button size="small" type="primary" plain @click="viewDetail(order)">查看详情</el-button>
+          <el-button v-if="order.status === 'paid'" size="small" type="success" @click="handleShip(order)">发货</el-button>
+          <el-button v-if="order.status === 'pending'" size="small" type="danger" plain @click="handleCancel(order)">取消</el-button>
+        </div>
+      </div>
+    </div>
     <!-- 分页 -->
     <el-pagination
       v-model:current-page="currentPage"
@@ -225,4 +244,69 @@ onMounted(() => {
 .breadcrumb { margin-bottom: 20px; }
 .filter-card { margin-bottom: 20px; padding: 20px 20px 10px; }
 .pagination { margin-top: 20px; display: flex; justify-content: flex-end; }
+.mobile-order-list {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .merchant-orders-table {
+    display: none !important;
+  }
+
+  .mobile-order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mobile-order-card {
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #ebeef5;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .mobile-order-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f2f5;
+  }
+
+  .mobile-order-no {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .mobile-order-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 0;
+    color: #606266;
+    font-size: 13px;
+  }
+
+  .mobile-order-meta strong {
+    color: #f56c6c;
+  }
+
+  .mobile-order-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mobile-order-actions .el-button {
+    flex: 1;
+    margin-left: 0;
+  }
+}
 </style>
+

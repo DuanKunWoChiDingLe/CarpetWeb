@@ -16,7 +16,7 @@
           <div class="avatar-uploader">
             <el-upload
               class="avatar-uploader"
-              :action="`${baseURL}/upload/image`"
+              :action="`${baseURL}/upload/avatar`"
               :headers="{ Authorization: `Bearer ${userStore.token}` }"
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
@@ -52,10 +52,11 @@ import { useUserStore } from '@/stores/user'
 import { userApi } from '@/api/user'
 import { useRouter } from 'vue-router'
 import { type UploadResponse } from '@/api/upload'
+import { getImageUrl } from '@/utils/image'
+import { apiBaseUrl as baseURL } from '@/config/runtime'
 
 const userStore = useUserStore()
 const router = useRouter()
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -71,18 +72,6 @@ const rules = {
 }
 
 // 获取图片完整 URL
-const getImageUrl = (path: string) => {
-  console.log('getImageUrl 接收到 path:', path)  // 打印原始路径
-  if (!path) return ''
-  if (path.startsWith('http')) return path
-  if (path.startsWith('/uploads')) {
-    console.log('path 以 /uploads 开头，直接返回:', path)  // 打印返回路径
-    return path
-  }
-  const fullUrl = baseURL + path
-  console.log('拼接后 URL:', fullUrl)
-  return fullUrl
-}
 
 
 // 加载当前用户信息
@@ -215,3 +204,5 @@ onMounted(() => {
   margin-top: 8px;
 }
 </style>
+
+

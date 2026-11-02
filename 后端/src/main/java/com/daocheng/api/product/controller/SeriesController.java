@@ -11,6 +11,7 @@ import com.daocheng.api.product.enums.MaterialEnum;
 import com.daocheng.api.product.service.SeriesService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,16 +38,19 @@ public class SeriesController {
         return Result.success(seriesService.getSeriesDetail(id));
     }
 
+    @PreAuthorize("hasRole('MERCHANT')")
     @PostMapping
     public Result<SeriesResponse> addSeries(@Valid @RequestBody SeriesRequest request) {
         return Result.success(seriesService.addSeries(request));
     }
 
+    @PreAuthorize("hasRole('MERCHANT')")
     @PutMapping("/{id}")
     public Result<SeriesResponse> updateSeries(@PathVariable Long id, @Valid @RequestBody SeriesRequest request) {
         return Result.success(seriesService.updateSeries(id, request));
     }
 
+    @PreAuthorize("hasRole('MERCHANT')")
     @DeleteMapping("/{id}")
     public Result<Void> deleteSeries(@PathVariable Long id) {
         seriesService.deleteSeries(id);

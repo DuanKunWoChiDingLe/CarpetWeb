@@ -7,7 +7,7 @@
 
     <!-- 顶部指标卡片 -->
     <el-row :gutter="20" class="stat-cards">
-      <el-col :span="8">
+      <el-col :xs="24" :sm="8">
         <el-card shadow="hover">
           <div class="stat-item">
             <div class="stat-label">今日销量</div>
@@ -16,7 +16,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="8">
+      <el-col :xs="24" :sm="8">
         <el-card shadow="hover">
           <div class="stat-item">
             <div class="stat-label">本月销量</div>
@@ -25,7 +25,7 @@
           </div>
         </el-card>
       </el-col>
-      <el-col :span="8">
+      <el-col :xs="24" :sm="8">
         <el-card shadow="hover">
           <div class="stat-item">
             <div class="stat-label">累计销量</div>
@@ -46,7 +46,7 @@
 
     <el-row :gutter="20">
       <!-- 系列销量占比 -->
-      <el-col :span="12">
+      <el-col :xs="24" :sm="24" :md="12">
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <span>系列销量占比</span>
@@ -55,7 +55,7 @@
         </el-card>
       </el-col>
       <!-- 品牌销量对比 -->
-      <el-col :span="12">
+      <el-col :xs="24" :sm="24" :md="12">
         <el-card class="chart-card" shadow="hover">
           <template #header>
             <span>品牌销量对比</span>

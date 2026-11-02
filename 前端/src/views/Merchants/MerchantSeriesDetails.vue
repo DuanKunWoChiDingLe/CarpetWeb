@@ -217,12 +217,12 @@ import { useUserStore } from '@/stores/user'
 import { seriesApi, type Series } from '@/api/series'
 import { productApi, type Product } from '@/api/product'
 import { type UploadResponse } from '@/api/upload'
+import { apiBaseUrl as baseURL } from '@/config/runtime'
 import type { UploadFileResponse } from '@/types/upload'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 const materialMap: Record<string, string> = {
   polypropylene: '丙纶',
@@ -453,7 +453,7 @@ const handleAddUploadSuccess = (response: UploadResponse, file: UploadFile, file
   if (url) {
     file.url = url
     file.response = { url }
-    const urls = fileList.map(f => f.response?.url).filter(Boolean) as string[]
+    const urls = fileList.map(f => (f.response as UploadFileResponse)?.url).filter(Boolean) as string[]
     addForm.images = urls
   } else {
     ElMessage.error('图片上传失败：返回数据格式异常')
@@ -461,7 +461,7 @@ const handleAddUploadSuccess = (response: UploadResponse, file: UploadFile, file
 }
 
 const handleAddRemove = (file: UploadFile, fileList: UploadFile[]) => {
-  const urls = fileList.map(f => f.response?.url).filter(Boolean) as string[]
+  const urls = fileList.map(f => (f.response as UploadFileResponse)?.url).filter(Boolean) as string[]
   addForm.images = urls
 }
 
@@ -487,8 +487,8 @@ const submitAddForm = async () => {
     await productApi.add({
       seriesId: addForm.seriesId,
       colorCode: addForm.colorCode,
-      pricePerSqm: addForm.pricePerSqm,
-      stock: addForm.stock,
+      pricePerSqm: addForm.pricePerSqm!,
+      stock: addForm.stock!,
       images: addForm.images,
       description: addForm.description,
       status: addForm.status
@@ -543,3 +543,4 @@ watch([currentPage, pageSize, sortBy], () => {
 .pagination { margin-top: 30px; display: flex; justify-content: flex-end; }
 .form-tip { font-size: 12px; color: #999; margin-top: 4px; }
 </style>
+

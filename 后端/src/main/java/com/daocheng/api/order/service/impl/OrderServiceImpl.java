@@ -15,6 +15,7 @@ import com.daocheng.api.order.mapper.OrderItemMapper;
 import com.daocheng.api.order.mapper.OrderMapper;
 import com.daocheng.api.order.service.OrderService;
 import com.daocheng.api.product.entity.Product;
+import com.daocheng.api.product.mapper.ProductMapper;
 import com.daocheng.api.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     private final OrderItemMapper orderItemMapper;
     private final ProductService productService;
+    private final ProductMapper productMapper;
     private final SimpMessagingTemplate messagingTemplate; // 新增
     // 如果存在购物车服务，可注入用于清空购物车等操作
     // private final CartService cartService;
@@ -65,13 +67,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             if (product == null) {
                 throw new BusinessException(400, "商品不存在，ID: " + item.getProductId());
             }
-            if (product.getStock() < item.getQuantity()) {
-                throw new BusinessException(400, "商品库存不足：" + product.getName());
+            if (product.getStatus() != null && product.getStatus() != 1) {
+                throw new BusinessException(400, "商品已下架：" + product.getName());
+            }
+            if (item.getQuantity() == null || item.getQuantity() < 1) {
+                throw new BusinessException(400, "购买数量必须大于0");
             }
 
-            // 扣减库存
+            // 原子扣减库存，避免并发下单导致超卖
+            int changed = productMapper.decreaseStock(product.getId(), item.getQuantity());
+            if (changed != 1) {
+                throw new BusinessException(400, "商品库存不足：" + product.getName());
+            }
             product.setStock(product.getStock() - item.getQuantity());
-            productService.updateById(product);
 
             // 计算小计
             BigDecimal subtotal = product.getPricePerSqm().multiply(BigDecimal.valueOf(item.getQuantity()));
@@ -212,6 +220,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
         if (!"pending".equals(order.getStatus())) {
             throw new BusinessException(400, "订单状态不正确，无法支付");
+        }
+        if (!StringUtils.hasText(payPassword)) {
+            throw new BusinessException(500, "支付功能未配置");
         }
         if (!payPassword.equals(password)) {
             throw new BusinessException(400, "支付密码错误");
@@ -377,8 +388,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         for (OrderItem item : items) {
             Product product = productService.getById(item.getProductId());
             if (product != null) {
-                product.setStock(product.getStock() + item.getQuantity());
-                productService.updateById(product);
+                productMapper.increaseStock(product.getId(), item.getQuantity());
             }
         }
     }
@@ -402,3 +412,5 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         return response;
     }
 }
+
+

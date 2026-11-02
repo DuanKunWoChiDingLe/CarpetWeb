@@ -25,10 +25,11 @@ export const useCartStore = defineStore('cart', () => {
   async function addItem(item: { productId: number; quantity: number }) {
     try {
       await cartApi.addToCart(item)
-      // 重新获取购物车（或手动更新 items）
       await fetchCart()
+      return true
     } catch (error) {
       ElMessage.error('添加失败')
+      return false
     }
   }
 

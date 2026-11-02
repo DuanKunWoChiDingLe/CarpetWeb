@@ -31,22 +31,11 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { bannerApi, type Banner } from '@/api/banner'
+import { getImageUrl } from '@/utils/image'
 
 const router = useRouter()
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 const loading = ref(false)
 const carouselList = ref<Banner[]>([])
-
-const getImageUrl = (path: string) => {
-  if (!path) return ''
-  // 如果已经是完整 URL 或绝对路径（以 /uploads 开头），直接返回
-  if (path.startsWith('http') || path.startsWith('/uploads')) {
-    return path
-  }
-  // 其他情况（如开发环境可能直接拼接 baseURL），保留原逻辑
-  return baseURL + path
-}
-
 const fetchBanners = async () => {
   loading.value = true
   try {
@@ -110,3 +99,4 @@ onMounted(() => {
   font-size: 14px;
 }
 </style>
+

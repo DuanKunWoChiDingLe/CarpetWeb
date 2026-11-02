@@ -3,7 +3,7 @@
     <div class="action-bar">
       <el-button type="primary" @click="handleAdd">新增轮播图</el-button>
     </div>
-    <el-table :data="bannerList" border stripe style="width: 100%" v-loading="loading">
+    <el-table class="banner-table" :data="bannerList" border stripe style="width: 100%" v-loading="loading">
       <el-table-column label="图片" width="120">
         <template #default="{ row }">
           <el-image :src="getImageUrl(row.imageUrl)" fit="cover" style="width: 80px; height: 60px;" />
@@ -29,6 +29,25 @@
       </el-table-column>
     </el-table>
 
+    <div class="mobile-banner-list">
+      <div v-for="row in bannerList" :key="row.id" class="mobile-banner-card">
+        <el-image :src="getImageUrl(row.imageUrl)" fit="cover" class="mobile-banner-image" />
+        <div class="mobile-banner-info">
+          <div class="mobile-banner-line">
+            <el-tag size="small">{{ row.linkType === 'product' ? '商品' : 'URL' }}</el-tag>
+            <span class="mobile-banner-link">{{ row.linkValue }}</span>
+          </div>
+          <div class="mobile-banner-line">
+            <span>排序：{{ row.sortOrder }}</span>
+            <el-switch v-model="row.enabled" @change="toggleEnabled(row)" />
+          </div>
+          <div class="mobile-banner-actions">
+            <el-button size="small" type="primary" plain @click="handleEdit(row)">编辑</el-button>
+            <el-button size="small" type="danger" plain @click="handleDelete(row)">删除</el-button>
+          </div>
+        </div>
+      </div>
+    </div>
     <el-pagination
       v-model:current-page="currentPage"
       v-model:page-size="pageSize"
@@ -82,14 +101,15 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox, UploadFile } from 'element-plus'
+import { ElMessage, ElMessageBox, type UploadFile } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { bannerApi, type Banner } from '@/api/banner'
-import { UploadResponse } from '@/api/upload'
+import type { UploadResponse } from '@/api/upload'
+import { getImageUrl } from '@/utils/image'
+import { apiBaseUrl as baseURL } from '@/config/runtime'
 
 const userStore = useUserStore()
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 // 列表数据
 const loading = ref(false)
@@ -119,15 +139,6 @@ const rules = {
   sortOrder: [{ required: true, message: '请输入排序', trigger: 'blur' }],
 }
 
-const getImageUrl = (path: string) => {
-  if (!path) return ''
-  // 如果已经是完整URL或绝对路径（以/uploads开头），直接返回
-  if (path.startsWith('http') || path.startsWith('/uploads')) {
-    return path
-  }
-  // 其他情况（如开发环境可能直接拼 baseURL），保留原逻辑
-  return baseURL + path
-}
 
 // 获取列表
 const fetchBanners = async () => {
@@ -285,4 +296,74 @@ onMounted(() => {
   color: #67c23a;
   margin-top: 5px;
 }
+.mobile-banner-list {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .banner-table {
+    display: none !important;
+  }
+
+  .mobile-banner-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mobile-banner-card {
+    display: flex;
+    gap: 12px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ebeef5;
+    border-radius: 10px;
+  }
+
+  .mobile-banner-image {
+    width: 110px;
+    height: 82px;
+    flex: 0 0 110px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .mobile-banner-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .mobile-banner-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: #606266;
+    font-size: 13px;
+  }
+
+  .mobile-banner-link {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-banner-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .mobile-banner-actions .el-button {
+    flex: 1;
+    margin-left: 0;
+  }
+}
 </style>
+
+
+

@@ -7,7 +7,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,7 +25,10 @@ public class JwtUtil {
     private Long expiration;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        if (!StringUtils.hasText(secret)) {
+            throw new IllegalStateException("JWT_SECRET 未配置");
+        }
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     // 生成 Token

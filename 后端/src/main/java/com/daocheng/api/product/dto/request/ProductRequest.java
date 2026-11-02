@@ -21,5 +21,7 @@ public class ProductRequest {
     private Integer stock;
     private List<String> images; // 图片URL列表
     private String description;
+    @Min(value = 0, message = "状态不能小于0")
+    @Max(value = 1, message = "状态不能大于1")
     private Integer status; // 默认1
 }

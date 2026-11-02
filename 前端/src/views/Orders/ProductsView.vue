@@ -130,9 +130,9 @@
               />
 
               <!-- 当色号数量超过4个时，显示“更多”提示 -->
-              <div v-if="series.colorCount > 4" class="more-hint">
+              <div v-if="(series.colorCount || 0) > 4" class="more-hint">
                 <el-button type="primary" link @click="goToSeriesDetail(series.id)">
-                  还有 {{ series.colorCount - 4 }} 个色号，点击查看全部 >
+                  还有 {{ (series.colorCount || 0) - 4 }} 个色号，点击查看全部 >
                 </el-button>
               </div>
             </el-card>

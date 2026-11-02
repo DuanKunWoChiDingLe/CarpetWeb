@@ -99,15 +99,9 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, type TabsPaneContext } from 'element-plus'
 import { orderApi, type Order } from '@/api/order'
 import PayDialog from '@/components/order/PayDialog.vue'
+import { getImageUrl } from '@/utils/image'
 
 const router = useRouter()
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-const getImageUrl = (path?: string) => {
-  if (!path) return ''
-  if (path.startsWith('http')) return path
-  if (path.startsWith('/uploads')) return path
-  return baseURL + path
-}
 
 // 状态筛选
 const activeStatus = ref('all')
@@ -181,7 +175,7 @@ const fetchOrders = async () => {
 
 // 切换标签
 const handleTabClick = (tab: TabsPaneContext) => {
-  activeStatus.value = tab.props.name
+  activeStatus.value = String(tab.props.name ?? 'all')
   currentPage.value = 1
   fetchOrders()
 }
@@ -297,3 +291,4 @@ onMounted(() => {
 .order-actions { display: flex; gap: 10px; }
 .pagination { margin-top: 30px; display: flex; justify-content: flex-end; }
 </style>
+

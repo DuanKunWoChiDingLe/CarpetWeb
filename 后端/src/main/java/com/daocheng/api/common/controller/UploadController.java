@@ -3,6 +3,8 @@ package com.daocheng.api.common.controller;
 import com.daocheng.api.common.dto.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,20 +24,30 @@ public class UploadController {
     private String uploadPath;
 
     @PostMapping("/image")
+    @PreAuthorize("hasRole('MERCHANT')")
     public Result<UploadResponse> uploadImage(@RequestParam("file") MultipartFile file) {
+        return storeImage(file);
+    }
+
+    @PostMapping("/avatar")
+    public Result<UploadResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        return storeImage(file);
+    }
+
+    private Result<UploadResponse> storeImage(MultipartFile file) {
         if (file.isEmpty()) {
             return Result.error(400, "文件不能为空");
         }
 
-        // 检查文件类型
+        // 检查文件类型，忽略大小写并拒绝无扩展名文件
         String originalFilename = file.getOriginalFilename();
-        String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
-        if (!suffix.matches("\\.(jpg|jpeg|png|gif|webp)$")) {
+        String extension = StringUtils.getFilenameExtension(originalFilename);
+        if (extension == null || !extension.toLowerCase().matches("jpg|jpeg|png|gif|webp")) {
             return Result.error(400, "仅支持 jpg、jpeg、png、gif、webp 格式的图片");
         }
 
-        // 生成唯一文件名
-        String newFileName = UUID.randomUUID().toString().replace("-", "") + suffix;
+        // 生成唯一文件名，避免原文件名带来的路径和编码问题
+        String newFileName = UUID.randomUUID().toString().replace("-", "") + "." + extension.toLowerCase();
         String datePath = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
         String fullPath = uploadPath + File.separator + datePath;
 
@@ -57,10 +69,15 @@ public class UploadController {
         return Result.success(new UploadResponse(relativePath));
     }
 
-    // 内部响应类
     static class UploadResponse {
-        private String url;
-        public UploadResponse(String url) { this.url = url; }
-        public String getUrl() { return url; }
+        private final String url;
+
+        public UploadResponse(String url) {
+            this.url = url;
+        }
+
+        public String getUrl() {
+            return url;
+        }
     }
 }

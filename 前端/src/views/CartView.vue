@@ -18,6 +18,7 @@
     <el-table
       v-else
       ref="multipleTable"
+      class="cart-table"
       :data="cartStore.items"
       style="width: 100%"
       @selection-change="handleSelectionChange"
@@ -78,6 +79,38 @@
       </el-table-column>
     </el-table>
 
+    <!-- 移动端商品卡片 -->
+    <div class="mobile-cart-list">
+      <div v-for="row in cartStore.items" :key="row.id" class="mobile-cart-item">
+        <div class="mobile-cart-head">
+          <el-checkbox
+            :model-value="isSelected(row.id)"
+            @change="(checked: boolean) => toggleMobileSelection(row, checked)"
+          />
+          <span class="mobile-cart-name">{{ row.name }}</span>
+          <el-button link type="danger" @click="handleRemove(row.id)">删除</el-button>
+        </div>
+        <div class="mobile-cart-body">
+          <el-image
+            :src="getImageUrl(row.image)"
+            :preview-src-list="[getImageUrl(row.image)]"
+            fit="cover"
+            class="mobile-cart-image"
+            lazy
+          />
+          <div class="mobile-cart-info">
+            <span class="mobile-cart-price">¥{{ row.price.toFixed(2) }} / m²</span>
+            <el-input-number
+              v-model="row.quantity"
+              :min="1"
+              size="small"
+              @change="(value: number) => handleQuantityChange(row.id, value)"
+            />
+            <span class="mobile-cart-subtotal">小计 ¥{{ (row.price * row.quantity).toFixed(2) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- 底部操作栏 -->
     <div v-if="cartStore.items.length > 0" class="cart-footer">
       <div class="footer-left">
@@ -102,6 +135,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCartStore } from '@/stores/cart'
 import { useUserStore } from '@/stores/user'
 import type { CartItem } from '@/api/cart'
+import { getImageUrl } from '@/utils/image'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -113,17 +147,6 @@ const multipleTable = ref()
 // 表格选中的商品行
 const selectedRows = ref<CartItem[]>([])
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-const getImageUrl = (path: string) => {
-  if (!path) return ''
-  if (path.startsWith('http')) return path
-  // 如果路径以 /uploads 开头，直接返回（不拼接 baseURL）
-  if (path.startsWith('/uploads')) {
-    return path
-  }
-  // 其他情况（如开发环境可能直接相对路径）才拼接 baseURL
-  return baseURL + path
-}
 
 // 全选状态
 const selectAll = computed({
@@ -131,14 +154,13 @@ const selectAll = computed({
     return cartStore.items.length > 0 && selectedRows.value.length === cartStore.items.length
   },
   set: (val) => {
+    selectedRows.value = val ? [...cartStore.items] : []
     if (multipleTable.value) {
       if (val) {
-        // 全选
         cartStore.items.forEach(item => {
           multipleTable.value.toggleRowSelection(item, true)
         })
       } else {
-        // 取消全选
         multipleTable.value.clearSelection()
       }
     }
@@ -158,6 +180,16 @@ const ids = selectedRows.value.map((item: CartItem) => item.id).join(',')
 // 监听表格选择变化
 const handleSelectionChange = (rows: CartItem[]) => {
   selectedRows.value = rows
+}
+
+const isSelected = (id: number) => selectedRows.value.some(item => item.id === id)
+
+const toggleMobileSelection = (item: CartItem, checked: boolean) => {
+  if (checked) {
+    if (!isSelected(item.id)) selectedRows.value.push(item)
+  } else {
+    selectedRows.value = selectedRows.value.filter(selected => selected.id !== item.id)
+  }
 }
 
 // 全选复选框变化时的额外处理（如果需要）
@@ -274,4 +306,80 @@ const goToHome = () => {
   color: #999;
   font-size: 12px;
 }
+.mobile-cart-list {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .cart-table {
+    display: none !important;
+  }
+
+  .mobile-cart-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mobile-cart-item {
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #ebeef5;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .mobile-cart-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .mobile-cart-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .mobile-cart-body {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .mobile-cart-image {
+    width: 78px;
+    height: 78px;
+    flex: 0 0 78px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .mobile-cart-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .mobile-cart-price {
+    color: #f56c6c;
+    font-weight: 600;
+  }
+
+  .mobile-cart-subtotal {
+    font-size: 13px;
+    color: #606266;
+  }
+}
 </style>
+
+
+
+

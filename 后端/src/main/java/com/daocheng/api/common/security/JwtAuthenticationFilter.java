@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -35,17 +36,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String token = getTokenFromRequest(request);
         if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
-            String username = jwtUtil.getUsernameFromToken(token);
-            Long userId = jwtUtil.getUserIdFromToken(token); // 获取用户ID
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            try {
+                String username = jwtUtil.getUsernameFromToken(token);
+                Long userId = jwtUtil.getUserIdFromToken(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-            // 将用户ID存入 authentication 的 details 中
-            authentication.setDetails(userId);
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(userId);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (UsernameNotFoundException e) {
+                log.warn("Token 对应的用户不存在，忽略本次认证: {}", e.getMessage());
+                SecurityContextHolder.clearContext();
+            }
         }
         chain.doFilter(request, response);
     }
@@ -58,3 +61,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 }
+

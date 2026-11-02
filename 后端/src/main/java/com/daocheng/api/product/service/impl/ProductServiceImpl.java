@@ -136,7 +136,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Override
     public IPage<ProductResponse> pageProductsBySeries(Page<Product> page, Long seriesId, String sort) {
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Product::getSeriesId, seriesId);
+        wrapper.eq(Product::getSeriesId, seriesId)
+                .eq(Product::getStatus, 1);
 
         // 处理排序
         if ("price_asc".equals(sort)) {

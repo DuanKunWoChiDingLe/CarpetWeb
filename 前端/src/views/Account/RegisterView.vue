@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, type FormInstance, type FormItemRule } from 'element-plus'
+import { type FormInstance, type FormItemRule } from 'element-plus'
 import { User, Lock, View, Hide } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 
@@ -141,25 +141,13 @@ const handleRegister = async () => {
   await formRef.value?.validate()
   loading.value = true
 
-  // 检查是否有临时商家注册标记（一次性）
-  const isMerchantReg = sessionStorage.getItem('tempMerchantReg') === 'true'
-  const role = isMerchantReg ? 'merchant' : 'customer'
-
   const success = await userStore.register(
     form.value.username,
     form.value.password,
-    role,
-    // form.value.nickname // 传递昵称，可能为空字符串
   )
-
-  // 无论成功失败，清除标记（避免重复使用）
-  if (isMerchantReg) {
-    sessionStorage.removeItem('tempMerchantReg')
-  }
 
   loading.value = false
   if (success) {
-    ElMessage.success('注册成功，已自动登录')
     router.replace('/')
   }
 }
@@ -295,3 +283,5 @@ const handleRegister = async () => {
   }
 }
 </style>
+
+

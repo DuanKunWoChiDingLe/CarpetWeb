@@ -11,6 +11,7 @@ import com.daocheng.api.product.service.ProductService;
 import com.daocheng.api.product.service.SeriesService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,10 +27,12 @@ public class ProductController {
 
     @GetMapping("/hot")
     public Result<List<ProductResponse>> getHotProducts(@RequestParam(defaultValue = "4") int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 100));
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        wrapper.orderByDesc(Product::getSales)
+        wrapper.eq(Product::getStatus, 1)
+                .orderByDesc(Product::getSales)
                 .orderByDesc(Product::getCreatedAt)
-                .last("LIMIT " + limit);
+                .last("LIMIT " + safeLimit);
         List<Product> products = productService.list(wrapper);
         List<ProductResponse> responses = products.stream()
                 .map(productService::convertToResponse)
@@ -43,7 +46,8 @@ public class ProductController {
             @RequestParam(defaultValue = "12") int size) {
         Page<Product> pageParam = new Page<>(page, size);
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        wrapper.orderByDesc(Product::getCreatedAt);
+        wrapper.eq(Product::getStatus, 1)
+                .orderByDesc(Product::getCreatedAt);
         IPage<Product> productPage = productService.page(pageParam, wrapper);
         IPage<ProductResponse> responsePage = productPage.convert(product ->
                 productService.convertToResponse(product)
@@ -67,16 +71,19 @@ public class ProductController {
         return Result.success(productService.getProductDetail(id));
     }
 
+    @PreAuthorize("hasRole('MERCHANT')")
     @PostMapping
     public Result<ProductResponse> addProduct(@Valid @RequestBody ProductRequest request) {
         return Result.success(productService.addProduct(request));
     }
 
+    @PreAuthorize("hasRole('MERCHANT')")
     @PutMapping("/{id}")
     public Result<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
         return Result.success(productService.updateProduct(id, request));
     }
 
+    @PreAuthorize("hasRole('MERCHANT')")
     @DeleteMapping("/{id}")
     public Result<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
@@ -90,7 +97,8 @@ public class ProductController {
             @RequestParam(defaultValue = "12") int size) {
         Page<Product> pageParam = new Page<>(page, size);
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(Product::getName, keyword)
+        wrapper.eq(Product::getStatus, 1)
+                .like(Product::getName, keyword)
                 .orderByDesc(Product::getCreatedAt);
         IPage<Product> productPage = productService.page(pageParam, wrapper);
         IPage<ProductResponse> responsePage = productPage.convert(product ->
@@ -100,3 +108,6 @@ public class ProductController {
 
     // 批量上下架接口等可后续添加
 }
+
+
+

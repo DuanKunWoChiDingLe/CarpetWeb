@@ -9,108 +9,129 @@
 
 <script setup lang="ts">
 import NavBar from './components/layout/NavBar.vue'
-import { onMounted, onUnmounted,watch  } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { useUserStore } from './stores/user'
 import { useCartStore } from '@/stores/cart'
-import { connectWebSocket, subscribe, unsubscribe, disconnectWebSocket } from '@/api/websocket'
+import { connectWebSocket, subscribe, disconnectWebSocket } from '@/api/websocket'
 import { ElNotification } from 'element-plus'
 import { useNotificationStore } from '@/stores/notification'
-const notificationStore = useNotificationStore()
 
+const notificationStore = useNotificationStore()
 const userStore = useUserStore()
 const cartStore = useCartStore()
 
-onMounted(() =>{
-  userStore.fetchCurrentUser()
-})
+const setupNotifications = () => {
+  connectWebSocket(() => {
+    const userId = userStore.userInfo?.id
+    const role = userStore.userInfo?.role
+
+    if (userId) {
+      subscribe(`/user/${userId}/queue/notifications`, (msg: any) => {
+        ElNotification({
+          title: msg.type === 'order' ? '订单通知' : '系统通知',
+          message: msg.content,
+          type: 'info'
+        })
+      })
+    }
+
+    if (role === 'merchant') {
+      subscribe('/topic/newOrders', (msg: unknown) => {
+        if (typeof msg === 'number') notificationStore.setNewOrderCount(msg)
+      })
+    }
+  })
+}
 
 onMounted(async () => {
-  await userStore.fetchCurrentUser()
+  if (userStore.token && !userStore.sessionRestored) {
+    await userStore.fetchCurrentUser()
+  }
   if (userStore.isLoggedIn) {
     await cartStore.fetchCart()
+    setupNotifications()
   }
 })
 
-// onMounted(() => {
-//   console.log('App onMounted, isLoggedIn:', userStore.isLoggedIn)
-//   if (userStore.isLoggedIn) {
-//     console.log('用户ID:', userStore.userInfo?.id)
-//     connectWebSocket(() => {
-//       console.log('WebSocket 连接成功回调触发')
-//       const userId = userStore.userInfo?.id
-//       if (userId) {
-//         console.log('准备订阅，userId:', userId)
-//         subscribe(`/user/${userId}/queue/notifications`, (msg: any) => {
-//           console.log('收到消息:', msg)
-//           ElNotification({ title: msg.type, message: msg.content, type: 'info' })
-//         })
-//         console.log('订阅地址：', `/user/${userId}/queue/notifications`)
-//       } else {
-//         console.warn('userId 为空，无法订阅')
-//       }
-//     })
-//   } else {
-//     console.log('用户未登录，不建立 WebSocket 连接')
-//   }
-// })
-
-watch(() => userStore.isLoggedIn, (isLoggedIn) => {
+watch(() => userStore.isLoggedIn, async (isLoggedIn) => {
   if (isLoggedIn) {
-    connectWebSocket(() => {
-      console.log('WebSocket 连接成功')
-      const userId = userStore.userInfo?.id
-      const role = userStore.userInfo?.role
-
-      // 所有登录用户订阅个人通知（可选）
-      if (userId) {
-        subscribe(`/user/${userId}/queue/notifications`, (msg: any) => {
-          console.log('个人通知:', msg)
-          ElNotification({
-            title: msg.type === 'order' ? '订单通知' : '系统通知',
-            message: msg.content,
-            type: 'info'
-          })
-        })
-      }
-
-      // 商家额外订阅新订单广播
-      if (role === 'merchant') {
-        subscribe('/topic/newOrders', (msg: unknown) => {
-  if (typeof msg === 'number') {
-    notificationStore.setNewOrderCount(msg)
-  }
-})
-      }
-    })
+    await cartStore.fetchCart()
+    setupNotifications()
   } else {
     disconnectWebSocket()
   }
-}, { immediate: true })
+})
 
 onUnmounted(() => {
   disconnectWebSocket()
 })
-
 </script>
 
 <style>
+:root {
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  margin: 0;
-  padding: 0;
+
+html,
+body,
+#app {
+  width: 100%;
+  min-height: 100%;
 }
+
+body {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #303133;
+  background: #f5f7fa;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+img,
+video {
+  max-width: 100%;
+}
+
 .app {
-  height: 100vh;           /* 改为固定高度，避免 min-height 可能带来的不确定性 */
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
+
 .main-content {
-  flex: 1;                 /* 自动填满剩余高度 */
-  overflow-y: auto;        /* 如果内容太多，在此容器内滚动，页面整体无滚动条 */
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .app {
+    min-height: 100svh;
+  }
+
+  .main-content {
+    overflow-x: hidden;
+  }
 }
 </style>
+
+
+

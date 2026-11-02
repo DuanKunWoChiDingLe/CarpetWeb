@@ -7,10 +7,12 @@ import com.daocheng.api.order.dto.response.OrderResponse;
 import com.daocheng.api.order.entity.Order;
 import com.daocheng.api.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/merchant/orders")
+@PreAuthorize("hasRole('MERCHANT')")
 @RequiredArgsConstructor
 public class MerchantOrderController {
 

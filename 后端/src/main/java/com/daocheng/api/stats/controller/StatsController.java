@@ -5,6 +5,7 @@ import com.daocheng.api.stats.dto.*;
 import com.daocheng.api.stats.service.StatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/stats/sales")
+@PreAuthorize("hasRole('MERCHANT')")
 @RequiredArgsConstructor
 public class StatsController {
 

@@ -1,7 +1,7 @@
 package com.daocheng.api.user.controller;
 
 import com.daocheng.api.common.dto.Result;
-import com.daocheng.api.common.utils.JwtUtil;
+import com.daocheng.api.common.utils.CurrentUser;
 import com.daocheng.api.user.dto.request.LoginRequest;
 import com.daocheng.api.user.dto.request.RegisterRequest;
 import com.daocheng.api.user.dto.request.UpdateProfileRequest;
@@ -19,52 +19,39 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
-    private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
     public Result<LoginResponse> register(@Valid @RequestBody RegisterRequest request) {
-        LoginResponse response = userService.register(request);
-        return Result.success(response);
+        return Result.success(userService.register(request));
     }
 
     @PostMapping("/login")
     public Result<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse response = userService.login(request);
-        return Result.success(response);
+        return Result.success(userService.login(request));
     }
 
     @GetMapping("/me")
-    public Result<UserInfoResponse> getCurrentUser(@RequestHeader("Authorization") String token) {
-        // 去除 Bearer 前缀
-        String actualToken = token.replace("Bearer ", "");
-        Long userId = jwtUtil.getUserIdFromToken(actualToken);
-        User user = userService.getById(userId);
+    public Result<UserInfoResponse> getCurrentUser() {
+        User user = userService.getById(CurrentUser.getId());
         if (user == null) {
             return Result.error(401, "用户不存在");
         }
-        UserInfoResponse response = new UserInfoResponse();
-        response.setId(user.getId());
-        response.setUsername(user.getUsername());
-        response.setNickname(user.getNickname());
-        response.setRole(user.getRole());
-        response.setAvatar(user.getAvatar());
-        return Result.success(response);
+        return Result.success(toUserInfoResponse(user));
     }
 
     @PutMapping("/profile")
-    public Result<UserInfoResponse> updateProfile(
-            @RequestHeader("Authorization") String token,
-            @Valid @RequestBody UpdateProfileRequest request) {
-        // 去除 Bearer 前缀
-        String actualToken = token.replace("Bearer ", "");
-        Long userId = jwtUtil.getUserIdFromToken(actualToken);
-        User user = userService.updateProfile(userId, request.getNickname(), request.getAvatar());
+    public Result<UserInfoResponse> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        User user = userService.updateProfile(CurrentUser.getId(), request.getNickname(), request.getAvatar());
+        return Result.success(toUserInfoResponse(user));
+    }
+
+    private UserInfoResponse toUserInfoResponse(User user) {
         UserInfoResponse response = new UserInfoResponse();
         response.setId(user.getId());
         response.setUsername(user.getUsername());
         response.setNickname(user.getNickname());
         response.setRole(user.getRole());
         response.setAvatar(user.getAvatar());
-        return Result.success(response);
+        return response;
     }
 }
