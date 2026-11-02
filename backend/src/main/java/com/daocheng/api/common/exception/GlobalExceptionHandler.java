@@ -22,11 +22,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Result<Void>> handleBusinessException(BusinessException e) {
         log.warn("业务异常: {}", e.getMessage());
-        // 根据业务错误码映射 HTTP 状态码，通常 4xx 表示客户端错误
-        HttpStatus status = HttpStatus.BAD_REQUEST; // 默认400
-        if (e.getCode() >= 500) {
-            status = HttpStatus.INTERNAL_SERVER_ERROR; // 500
-        }
+        HttpStatus status = switch (e.getCode()) {
+            case 401 -> HttpStatus.UNAUTHORIZED;
+            case 403 -> HttpStatus.FORBIDDEN;
+            case 404 -> HttpStatus.NOT_FOUND;
+            case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
+            default -> HttpStatus.BAD_REQUEST;
+        };
         return ResponseEntity.status(status).body(Result.error(e.getCode(), e.getMessage()));
     }
 
@@ -48,3 +50,4 @@ public class GlobalExceptionHandler {
                 .body(Result.error(ResultCodeEnum.ERROR));
     }
 }
+
